@@ -56,3 +56,10 @@ await stable.burn({ holder: "bob", amount: 100_000, burner: "ops" });
 - `compliance.seize(from, to, amount)`
 
 Compliance operations fail with explicit errors when the compliance module is disabled.
+
+
+## Operator Views
+
+- `listMinters()` for quota tracking
+- `listHolders(minBalance)` for holder snapshots
+- `getAuditLog(action?)` for action-specific audit trails

@@ -64,17 +64,44 @@ export class SolanaStablecoin {
     if (max <= 0n) {
       throw new Error("Quota must be greater than zero.");
     }
-    this.minterQuotas.set(minter, { max, used: 0n });
+    const existing = this.minterQuotas.get(minter);
+    this.minterQuotas.set(minter, { max, used: existing?.used ?? 0n });
     this.log("set_minter_quota", { minter, quota: max.toString() });
     return { ok: true, minter, quota: max.toString() };
+  }
+
+  removeMinterQuota(minter) {
+    const existed = this.minterQuotas.delete(minter);
+    this.log("remove_minter_quota", { minter, existed });
+    return { ok: true, minter, existed };
+  }
+
+  listMinters() {
+    return [...this.minterQuotas.entries()].map(([minter, q]) => ({
+      minter,
+      max: q.max.toString(),
+      used: q.used.toString(),
+      remaining: (q.max - q.used).toString(),
+    }));
+  }
+
+  listHolders(minBalance = 0) {
+    const minimum = BigInt(minBalance);
+    return [...this.balances.entries()]
+      .filter(([, amount]) => amount >= minimum)
+      .map(([holder, balance]) => ({ holder, balance: balance.toString() }))
+      .sort((a, b) => BigInt(b.balance) > BigInt(a.balance) ? 1 : -1);
+  }
+
+  getAuditLog(action) {
+    if (!action) return this.auditLog;
+    return this.auditLog.filter((item) => item.action === action);
   }
 
   async mint({ recipient, amount, minter }) {
     this.assertNotPaused();
     this.assertNotBlacklisted(recipient);
-
     const mintAmount = amountToBigInt(amount);
-
     if (minter && this.minterQuotas.has(minter)) {
       const quota = this.minterQuotas.get(minter);
       if (quota.used + mintAmount > quota.max) {
@@ -83,7 +110,6 @@ export class SolanaStablecoin {
       quota.used += mintAmount;
       this.minterQuotas.set(minter, quota);
     }
-
     const next = this.getBalance(recipient) + mintAmount;
     this.balances.set(recipient, next);
     this.totalSupply += mintAmount;
@@ -106,12 +132,8 @@ export class SolanaStablecoin {
 
   async transfer({ from, to, amount }) {
     this.assertNotPaused();
-    if (this.frozenAccounts.has(from)) {
-      throw new Error(`Source account is frozen: ${from}`);
-    }
-    if (this.frozenAccounts.has(to)) {
-      throw new Error(`Destination account is frozen: ${to}`);
-    }
+    if (this.frozenAccounts.has(from)) throw new Error(`Source account is frozen: ${from}`);
+    if (this.frozenAccounts.has(to)) throw new Error(`Destination account is frozen: ${to}`);
     this.assertNotBlacklisted(from);
     this.assertNotBlacklisted(to);
 

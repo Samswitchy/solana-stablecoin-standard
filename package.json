@@ -1,0 +1,21 @@
+{
+  "name": "solana-stablecoin-standard",
+  "version": "0.2.0",
+  "description": "Open-source SDK and standards scaffold for stablecoins on Solana",
+  "type": "module",
+  "bin": {
+    "sss-token": "./bin/sss-token.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check src/*.js test/*.js bin/*.js"
+  },
+  "keywords": [
+    "solana",
+    "stablecoin",
+    "token-2022",
+    "sdk",
+    "cli"
+  ],
+  "license": "MIT"
+}

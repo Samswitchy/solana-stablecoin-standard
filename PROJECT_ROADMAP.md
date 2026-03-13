@@ -44,7 +44,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ `SSS-2.md`
 - ✅ `COMPLIANCE.md`
 - ✅ `API.md`
-- 🟡 Finalize docs once devnet proof is complete
+- 🟡 Finalize docs and submission narrative around the completed devnet proof
 
 ## 5) Testing
 
@@ -96,11 +96,12 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## 10) Devnet Proof and Submission Assets
 
-- 🟡 Deploy program(s) to devnet and record Program IDs
-- 🟡 Capture example transaction signatures for required flows
+- ✅ Deploy program(s) to devnet and record Program IDs
+- ✅ Capture example transaction signatures for required flows
 - ✅ Add reproducible scripts for deployment and smoke checks
 - ✅ Record localnet proof artifacts in `LOCALNET_PROOF.md`
-- ⬜ Finalize submission-ready documentation
+- ✅ Record devnet deployment and transaction proof in `DEVNET_PROOF.md`
+- 🟡 Finalize submission-ready documentation
 - ⬜ Record short showcase video with strongest points of implementation
 
 ---
@@ -116,25 +117,26 @@ The project now has both:
 - a Dockerized backend service skeleton covering mint/burn, compliance, indexer, and webhook flows
 - a polished example frontend that demonstrates issuance and operator workflows
 - recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
+- recorded devnet program IDs, deploy signatures, init/mint/blacklist/seize signatures, and final balances in `DEVNET_PROOF.md`
 
 ## Immediate Next Steps
 
-- Run the same proof flow on devnet and record final Program IDs and transaction signatures.
-- Extend the backend skeleton into fuller production workflows and external screening integrations.
-- Decide whether to spend remaining time on an admin TUI or keep focus on devnet proof and final submission polish.
+- Finalize the judge-facing docs pass now that devnet proof is recorded.
+- Prepare the PR summary, demo script, and X post using the real devnet proof data.
+- Decide whether to spend any remaining time on an admin TUI or on deeper backend persistence/polish.
 
 ## Final Sprint Checklist
 
-- 🟡 Fund a deploy authority on devnet and run `./scripts/devnet-deploy.sh`
+- ✅ Fund a deploy authority on devnet and deploy both programs
 - ✅ Prepare `DEVNET_PROOF.md` template for final devnet capture
 - ✅ Prepare `SUBMISSION_CHECKLIST.md` for final packaging review
 - ✅ Prepare `./scripts/submission-check.sh` for one-command artifact validation
-- ⬜ Record final devnet Program IDs and transaction signatures in `DEVNET_PROOF.md`
-- ⬜ Add final submission polish to docs with exact reproduction steps for judges
+- ✅ Record final devnet Program IDs and transaction signatures in `DEVNET_PROOF.md`
+- 🟡 Add final submission polish to docs with exact reproduction steps for judges
 - ⬜ Record the 2-to-5 minute demo video and publish the X post
 - ⬜ Prepare the PR/submission summary with strongest points: on-chain compliance flow, localnet proof, integration tests, and operator stack
 
 ## Current Blockers
 
-- Devnet deployment from this shell is currently blocked by faucet rate limiting, not by code or connectivity.
-- The backend services are now present as an operator-grade skeleton, but still need deeper persistence/integration work if you want them to score as fully productionized.
+- Public `api.devnet.solana.com` does not support the Token-2022 secondary index required by the generic `holders` and `status` implementations, so proof capture currently uses direct mint + ATA reads on devnet.
+- The backend services are still an operator-grade skeleton and could score higher with deeper persistence and third-party screening integration if time remains.

@@ -24,33 +24,50 @@ solana program deploy target/deploy/transfer_hook.so \
   --url "$RPC_URL" \
   --use-rpc
 
+STABLECOIN_PROGRAM_ID="$(solana-keygen pubkey target/deploy/stablecoin_core-keypair.json)"
+TRANSFER_HOOK_PROGRAM_ID="$(solana-keygen pubkey target/deploy/transfer_hook-keypair.json)"
+
+rm -f "$STATE_PATH"
+
 node ./bin/sss-token.js init \
   --preset sss-2 \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"
 
 node ./bin/sss-token.js minters add "$AUTHORITY_PUBKEY" 1000000 \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"
 
 node ./bin/sss-token.js mint "$AUTHORITY_PUBKEY" 500000 \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"
 
 node ./bin/sss-token.js blacklist add "$AUTHORITY_PUBKEY" --reason watchlist \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"
 
 node ./bin/sss-token.js seize "$AUTHORITY_PUBKEY" --to "$TREASURY_PUBKEY" --amount 100000 \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"
 
 node ./bin/sss-token.js holders \
   --rpc-url "$RPC_URL" \
   --keypair "$KEYPAIR_PATH" \
+  --stablecoin-program-id "$STABLECOIN_PROGRAM_ID" \
+  --transfer-hook-program-id "$TRANSFER_HOOK_PROGRAM_ID" \
   --state "$STATE_PATH"

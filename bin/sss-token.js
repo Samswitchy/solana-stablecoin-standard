@@ -41,6 +41,8 @@ function help() {
 chain flags:
   --rpc-url <url|devnet|testnet|mainnet-beta>
   --keypair <path-to-keypair.json>
+  --stablecoin-program-id <program-id>
+  --transfer-hook-program-id <program-id>
 `);
 }
 
@@ -137,6 +139,18 @@ function keypairPathFromArgs(args) {
   return expandHome(arg("--keypair", args) ?? process.env.SSS_KEYPAIR ?? "~/.config/solana/id.json");
 }
 
+function programIdsFromArgs(args, state) {
+  const stablecoinCore =
+    arg("--stablecoin-program-id", args) ?? process.env.SSS_STABLECOIN_PROGRAM_ID ?? state?.programIds?.stablecoinCore;
+  const transferHook =
+    arg("--transfer-hook-program-id", args) ?? process.env.SSS_TRANSFER_HOOK_PROGRAM_ID ?? state?.programIds?.transferHook;
+  if (!stablecoinCore && !transferHook) return undefined;
+  return {
+    stablecoinCore,
+    transferHook,
+  };
+}
+
 function rpcUrlFromArgs(args, state) {
   return arg("--rpc-url", args) ?? process.env.SSS_RPC_URL ?? state?.rpcUrl;
 }
@@ -175,7 +189,7 @@ async function chainClientFromState(args, statePath) {
     configAddress: state.configAddress,
     hookConfig: state.hookConfig,
     config: state.config,
-    programIds: state.programIds,
+    programIds: programIdsFromArgs(args, state) ?? state.programIds,
   });
 }
 
@@ -221,6 +235,7 @@ if (cmd === "init") {
       rpcUrl: runtime.rpcUrl,
       authority: runtime.authority,
       roles: config.roles ?? {},
+      programIds: programIdsFromArgs(args, existingState),
     });
     const serialized = client.serialize();
     saveState(serialized, statePath);

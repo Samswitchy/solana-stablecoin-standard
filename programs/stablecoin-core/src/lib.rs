@@ -3,7 +3,7 @@ use anchor_spl::token_interface::{
     self, Burn, FreezeAccount, Mint, MintTo, ThawAccount, TokenAccount, TokenInterface,
 };
 
-declare_id!("DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1");
+declare_id!("5oaQNq7VZWRzaqhY7vxaxnP5fjoGCM6266LkSk8mjJS4");
 
 #[program]
 pub mod stablecoin_core {

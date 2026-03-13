@@ -11,12 +11,12 @@ use spl_transfer_hook_interface::{
 };
 use std::str::FromStr;
 
-declare_id!("4eY1C8wjyJXTA3zUju9tKmND1netsJw9ViW7uBRCdzGQ");
+declare_id!("ANsBbf6d6k7gtaj2mWC8d4eLz5FTkDLvmmLkQuxR7aUF");
 
 const TOKEN_ACCOUNT_OWNER_OFFSET: usize = 32;
 const TOKEN_ACCOUNT_OWNER_LEN: usize = 32;
 const EXECUTE_EXTRA_META_COUNT: usize = 3;
-const STABLECOIN_CORE_PROGRAM_ID: &str = "DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1";
+const STABLECOIN_CORE_PROGRAM_ID: &str = "5oaQNq7VZWRzaqhY7vxaxnP5fjoGCM6266LkSk8mjJS4";
 
 #[program]
 pub mod transfer_hook {

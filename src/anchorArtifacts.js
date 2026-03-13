@@ -3,8 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const DEFAULT_PROGRAM_IDS = Object.freeze({
-  stablecoinCore: "DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1",
-  transferHook: "4eY1C8wjyJXTA3zUju9tKmND1netsJw9ViW7uBRCdzGQ",
+  stablecoinCore: "5oaQNq7VZWRzaqhY7vxaxnP5fjoGCM6266LkSk8mjJS4",
+  transferHook: "ANsBbf6d6k7gtaj2mWC8d4eLz5FTkDLvmmLkQuxR7aUF",
 });
 
 const __filename = fileURLToPath(import.meta.url);

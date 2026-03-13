@@ -1,0 +1,80 @@
+flowchart TB
+    issuer[Issuer / Operator]
+    cli[sss-token CLI]
+    tui[Admin TUI]
+    frontend[Example Frontend]
+    sdk[TypeScript SDK]
+    services[Backend Services]
+
+    subgraph Operator Surface
+        cli
+        tui
+        frontend
+    end
+
+    subgraph Service Layer
+        mintburn[Mint / Burn Service]
+        compliance[Compliance Service]
+        indexer[Indexer]
+        webhook[Webhook Service]
+        services --> mintburn
+        services --> compliance
+        services --> indexer
+        services --> webhook
+    end
+
+    subgraph SDK Layer
+        sdk
+        presets[Preset Engine\nSSS-1 / SSS-2 / Custom]
+        readers[State Readers\nstatus / holders / audit]
+        sdk --> presets
+        sdk --> readers
+    end
+
+    subgraph On-Chain Programs
+        core[stablecoin-core\nAnchor Program]
+        hook[transfer-hook\nAnchor Program]
+        quotas[Minter Quota PDAs]
+        blacklist[Blacklist PDAs]
+        config[Stablecoin Config PDA]
+        core --> config
+        core --> quotas
+        core --> blacklist
+        hook --> blacklist
+    end
+
+    subgraph Token Layer
+        mint[Token-2022 Mint]
+        atas[Holder Token Accounts]
+        metadata[Token Metadata]
+    end
+
+    subgraph Presets
+        sss1[SSS-1\nMinimal Stablecoin]
+        sss2[SSS-2\nCompliant Stablecoin]
+    end
+
+    issuer --> cli
+    issuer --> tui
+    issuer --> frontend
+
+    cli --> sdk
+    tui --> sdk
+    frontend --> services
+    mintburn --> sdk
+    compliance --> sdk
+    indexer --> sdk
+
+    presets --> sss1
+    presets --> sss2
+    sss2 --> hook
+    sss1 --> core
+    sss2 --> core
+
+    sdk --> core
+    sdk --> hook
+    core --> mint
+    core --> atas
+    core --> metadata
+    hook --> mint
+    mint --> atas

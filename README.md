@@ -7,7 +7,7 @@ Production-focused open-source foundation for building stablecoins on Solana wit
 - CLI-first operator workflows
 - Compliance-ready extension points
 
-> Current milestone: hybrid foundation. The repo now includes the original local SDK/CLI simulator for workflow iteration plus a first real Anchor workspace with `stablecoin-core` and `transfer-hook` programs.
+> Current milestone: hybrid foundation with real on-chain execution. The repo now includes the original local SDK/CLI simulator for workflow iteration plus a working Anchor workspace, an on-chain TypeScript client, and a chain-enabled operator CLI.
 
 ## Reference note
 
@@ -23,6 +23,20 @@ npm test
 ./bin/sss-token.js mint alice 500000
 ./bin/sss-token.js holders --min-balance 100000
 ./bin/sss-token.js audit-log --action mint
+```
+
+Localnet on-chain flow:
+
+```bash
+anchor build
+solana-test-validator --reset
+solana program deploy target/deploy/stablecoin_core.so --program-id target/deploy/stablecoin_core-keypair.json
+solana program deploy target/deploy/transfer_hook.so --program-id target/deploy/transfer_hook-keypair.json
+./bin/sss-token.js init --preset sss-2 --rpc-url http://127.0.0.1:8899 --keypair ~/.config/solana/id.json --state ./.sss-chain.json
+./bin/sss-token.js minters add <AUTHORITY_PUBKEY> 1000000 --rpc-url http://127.0.0.1:8899 --keypair ~/.config/solana/id.json --state ./.sss-chain.json
+./bin/sss-token.js mint <AUTHORITY_PUBKEY> 500000 --rpc-url http://127.0.0.1:8899 --keypair ~/.config/solana/id.json --state ./.sss-chain.json
+./bin/sss-token.js blacklist add <AUTHORITY_PUBKEY> --reason watchlist --rpc-url http://127.0.0.1:8899 --keypair ~/.config/solana/id.json --state ./.sss-chain.json
+./bin/sss-token.js status --rpc-url http://127.0.0.1:8899 --keypair ~/.config/solana/id.json --state ./.sss-chain.json
 ```
 
 Custom state path:
@@ -53,8 +67,9 @@ This revision now includes:
 
 - An executable in-memory model for SDK and CLI iteration
 - A real Anchor workspace with PDA-based config, minter quota, blacklist, pause, seize, and role management flows
-- A transfer-hook program scaffold for SSS-2 blacklist enforcement wiring
-- Offline-compilable Rust workspace validation via `cargo check --offline`
+- A chain-enabled SDK client that creates Token-2022 mints, initializes metadata, and sends Anchor transactions
+- A chain-enabled CLI that persists deployment metadata and executes RPC-backed operator commands
+- Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, status, and reader commands
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 
-Next milestone: Anchor tests, SDK/CLI RPC wiring, Token-2022 mint bootstrap flows, and devnet deployment evidence.
+Current remaining gap: transfer-hook extra-account meta wiring for full hook-enforced `transfer` and `seize` CPI flows, plus devnet deployment evidence.

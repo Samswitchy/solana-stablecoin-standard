@@ -40,6 +40,7 @@
 
 This repo is currently in a hybrid phase:
 
-- The JS SDK and CLI still run as a local state simulator for operator workflow design.
-- The Anchor workspace now provides the first real on-chain control plane for config, quotas, compliance flags, and token-admin CPIs.
-- The remaining migration is to replace local CLI/SDK execution with RPC-backed transaction builders and full transfer-hook integration tests.
+- The local simulator still exists for fast operator workflow iteration.
+- The repo now also ships a real on-chain client and CLI path backed by Anchor programs and Token-2022.
+- The Anchor workspace provides the current on-chain control plane for config, quotas, compliance flags, mint/burn/freeze operations, and blacklist management.
+- The remaining protocol gap is full transfer-hook extra-account-meta wiring for hook-enforced CPI paths such as on-chain `seize`.

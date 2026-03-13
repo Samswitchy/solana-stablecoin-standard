@@ -3,6 +3,8 @@
 ## SDK
 
 - `SolanaStablecoin.create(connection, config)`
+- `OnchainSolanaStablecoin.create(connection, config)`
+- `OnchainSolanaStablecoin.fromDeployment(options)`
 - `SolanaStablecoin#setMinterQuota(minter, quota)`
 - `SolanaStablecoin#removeMinterQuota(minter)`
 - `SolanaStablecoin#listMinters()`
@@ -20,10 +22,29 @@
 - `SolanaStablecoin#compliance.blacklistAdd(address, reason)`
 - `SolanaStablecoin#compliance.blacklistRemove(address)`
 - `SolanaStablecoin#compliance.seize(from, to, amount)`
+- `OnchainSolanaStablecoin#fetchConfig()`
+- `OnchainSolanaStablecoin#getTotalSupply()`
+- `OnchainSolanaStablecoin#status()`
+- `OnchainSolanaStablecoin#mint({ recipient, amount, minter })`
+- `OnchainSolanaStablecoin#burn({ holder, amount, burner, holderAuthority })`
+- `OnchainSolanaStablecoin#freezeAccount({ address, authority })`
+- `OnchainSolanaStablecoin#thawAccount({ address, authority })`
+- `OnchainSolanaStablecoin#pause({ authority })`
+- `OnchainSolanaStablecoin#unpause({ authority })`
+- `OnchainSolanaStablecoin#setMinterQuota(minter, quota, authority?)`
+- `OnchainSolanaStablecoin#removeMinterQuota(minter, authority?)`
+- `OnchainSolanaStablecoin#listMinters()`
+- `OnchainSolanaStablecoin#listHolders(minBalance?)`
+- `OnchainSolanaStablecoin#listBlacklisted()`
+- `OnchainSolanaStablecoin#getAuditLog(action?)`
+- `OnchainSolanaStablecoin#compliance.blacklistAdd(address, reason, authority?)`
+- `OnchainSolanaStablecoin#compliance.blacklistRemove(address, authority?)`
+- `OnchainSolanaStablecoin#compliance.seize(from, to, amount, authority?)`
 
 ## CLI
 
-All CLI commands accept `--state <path>` to read/write an isolated local state snapshot.
+All CLI commands accept `--state <path>` to read/write an isolated state snapshot.
+Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing chain deployment state file is present.
 
 - `sss-token init --preset sss-1|sss-2`
 - `sss-token init --custom <config.json|config.toml>`

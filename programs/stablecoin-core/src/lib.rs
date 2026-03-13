@@ -4,7 +4,7 @@ use anchor_spl::token_interface::{
     TransferChecked,
 };
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkgMQVGKZ2H3m");
+declare_id!("DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1");
 
 #[program]
 pub mod stablecoin_core {

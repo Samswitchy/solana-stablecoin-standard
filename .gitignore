@@ -3,3 +3,4 @@ target/
 .sss-state.json
 .anchor/
 dist/
+test-ledger/

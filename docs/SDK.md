@@ -3,7 +3,7 @@
 ## Imports
 
 ```js
-import { SolanaStablecoin, Presets } from "solana-stablecoin-standard";
+import { OnchainSolanaStablecoin, Presets, SolanaStablecoin } from "solana-stablecoin-standard";
 ```
 
 ## Preset Initialization
@@ -42,6 +42,27 @@ await stable.transfer({ from: "alice", to: "bob", amount: 200_000 });
 await stable.burn({ holder: "bob", amount: 100_000, burner: "ops" });
 ```
 
+## On-Chain Initialization
+
+```js
+import { Connection, Keypair } from "@solana/web3.js";
+
+const connection = new Connection("http://127.0.0.1:8899", "confirmed");
+const authority = Keypair.fromSecretKey(...);
+
+const stable = await OnchainSolanaStablecoin.create(connection, {
+  preset: Presets.SSS_2,
+  name: "Local Stablecoin",
+  symbol: "LUSD",
+  decimals: 6,
+  authority,
+});
+
+await stable.setMinterQuota(authority.publicKey, 1_000_000);
+await stable.mint({ recipient: authority.publicKey, amount: 500_000 });
+const status = await stable.status();
+```
+
 ## Control Operations
 
 - `freezeAccount({ address, authority })`
@@ -63,3 +84,7 @@ Compliance operations fail with explicit errors when the compliance module is di
 - `listMinters()` for quota tracking
 - `listHolders(minBalance)` for holder snapshots
 - `getAuditLog(action?)` for action-specific audit trails
+
+## Current On-Chain Caveat
+
+The transfer-hook program is deployed and initialized, but full SPL transfer-hook extra-account-meta wiring is still pending for hook-enforced CPI flows such as on-chain `seize`.

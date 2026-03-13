@@ -32,7 +32,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Add token operation commands
 - ✅ Add management commands (`minters`, `holders`, `audit-log`)
 - ✅ Add compliance commands (`blacklist`, `seize`)
-- 🟡 Upgrade CLI from simulator execution to real RPC/Anchor execution
+- ✅ Upgrade CLI from simulator execution to real RPC/Anchor execution
 
 ## 4) Documentation
 
@@ -44,7 +44,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ `SSS-2.md`
 - ✅ `COMPLIANCE.md`
 - ✅ `API.md`
-- 🟡 Update all docs once on-chain programs are fully wired
+- 🟡 Update all docs once transfer-hook CPI wiring and devnet proof are complete
 
 ## 5) Testing
 
@@ -54,7 +54,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Rust unit tests for on-chain role/compliance validation
 - 🟡 Expand negative-path and edge-case coverage
 - ⬜ Add Anchor program instruction tests
-- ⬜ Add full end-to-end preset integration tests against local validator/devnet
+- 🟡 Add full end-to-end preset integration tests against local validator/devnet
 - ⬜ Add fuzz/property testing strategy
 
 ## 6) On-Chain Programs (Production Core)
@@ -68,10 +68,10 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## 7) TypeScript SDK (Real Chain Integration)
 
-- ⬜ Replace local-only behavior with transaction builders/signers
-- ⬜ Add account/state readers from chain
-- ⬜ Add explicit error decoding and typed responses
-- ⬜ Keep backwards-compatible high-level API ergonomics
+- ✅ Replace local-only behavior with transaction builders/signers
+- ✅ Add account/state readers from chain
+- 🟡 Add explicit error decoding and typed responses
+- ✅ Keep backwards-compatible high-level API ergonomics
 
 ## 8) Backend Services and Deployment Ops
 
@@ -85,8 +85,8 @@ This roadmap tracks what is already done and what remains to reach a production-
 ## 9) Devnet Proof and Submission Assets
 
 - ⬜ Deploy program(s) to devnet and record Program IDs
-- ⬜ Capture example transaction signatures for required flows
-- ⬜ Add reproducible scripts for deployment and smoke checks
+- 🟡 Capture example transaction signatures for required flows
+- ✅ Add reproducible scripts for deployment and smoke checks
 - ⬜ Finalize submission-ready documentation
 - ⬜ Record short showcase video with strongest points of implementation
 
@@ -97,6 +97,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 The project now has both:
 
 - a strong local simulator foundation with SDK + CLI + docs + tests
-- a compiling Anchor workspace with first-pass `stablecoin-core` and `transfer-hook` programs
+- a compiling Anchor workspace with `stablecoin-core` and `transfer-hook` programs
+- a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, status, and reader flows
 
-The next major phase is transaction wiring, Anchor tests, and devnet proof.
+The next major phase is transfer-hook extra-account-meta wiring, Anchor integration tests, and devnet proof.

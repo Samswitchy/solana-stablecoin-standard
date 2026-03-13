@@ -5,8 +5,8 @@ members = [
 ]
 
 [programs.localnet]
-stablecoin_core = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkgMQVGKZ2H3m"
-transfer_hook = "8opHzTAnfzRpPEx21XtnrVTX28YQuCpAjcn1PczScKh"
+stablecoin_core = "DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1"
+transfer_hook = "4eY1C8wjyJXTA3zUju9tKmND1netsJw9ViW7uBRCdzGQ"
 
 [provider]
 cluster = "Localnet"

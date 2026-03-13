@@ -110,3 +110,19 @@ The project now has both:
 
 - Run the same proof flow on devnet and record final Program IDs and transaction signatures.
 - Extend the backend skeleton into fuller production workflows and external screening integrations.
+
+## Final Sprint Checklist
+
+- 🟡 Fund a deploy authority on devnet and run `./scripts/devnet-deploy.sh`
+- ✅ Prepare `DEVNET_PROOF.md` template for final devnet capture
+- ✅ Prepare `SUBMISSION_CHECKLIST.md` for final packaging review
+- ✅ Prepare `./scripts/submission-check.sh` for one-command artifact validation
+- ⬜ Record final devnet Program IDs and transaction signatures in `DEVNET_PROOF.md`
+- ⬜ Add final submission polish to docs with exact reproduction steps for judges
+- ⬜ Record the 2-to-5 minute demo video and publish the X post
+- ⬜ Prepare the PR/submission summary with strongest points: on-chain compliance flow, localnet proof, integration tests, and operator stack
+
+## Current Blockers
+
+- Devnet deployment from this shell is currently blocked by faucet rate limiting, not by code or connectivity.
+- The backend services are now present as an operator-grade skeleton, but still need deeper persistence/integration work if you want them to score as fully productionized.

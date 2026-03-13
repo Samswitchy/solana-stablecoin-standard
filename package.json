@@ -9,8 +9,13 @@
   "scripts": {
     "test": "node --test",
     "test:rust": "cargo test --offline",
+    "test:integration": "SSS_RUN_LOCALNET_TESTS=1 node --test test/onchain.integration.test.js",
     "build:anchor": "anchor build",
-    "lint": "node --check src/*.js test/*.js bin/*.js"
+    "lint": "node --check src/*.js test/*.js services/*.js bin/*.js",
+    "service:mint-burn": "node services/mint-burn.js",
+    "service:compliance": "node services/compliance.js",
+    "service:indexer": "node services/indexer.js",
+    "service:webhook": "node services/webhook.js"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",

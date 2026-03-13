@@ -65,3 +65,35 @@ Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing 
 - `sss-token blacklist add <address> --reason <reason>`
 - `sss-token blacklist remove <address>`
 - `sss-token seize <address> --to <treasury> --amount <amount>`
+
+## Backend Services
+
+### `mint-burn`
+
+- `GET /health`
+- `GET /requests`
+- `POST /mint` with `{ "recipient": "...", "amount": 1000 }`
+- `POST /burn` with `{ "holder": "...", "amount": 1000 }`
+
+### `compliance`
+
+- `GET /health`
+- `GET /blacklist`
+- `GET /audit`
+- `POST /blacklist/add` with `{ "address": "...", "reason": "watchlist" }`
+- `POST /blacklist/remove` with `{ "address": "..." }`
+- `POST /seize` with `{ "from": "...", "to": "...", "amount": 1000 }`
+
+### `indexer`
+
+- `GET /health`
+- `GET /snapshot`
+- `POST /poll`
+
+### `webhook`
+
+- `GET /health`
+- `GET /subscriptions`
+- `GET /deliveries`
+- `POST /subscriptions` with `{ "url": "https://...", "events": ["indexer.snapshot.updated"] }`
+- `POST /dispatch` with `{ "event": "indexer.snapshot.updated", "payload": {...} }`

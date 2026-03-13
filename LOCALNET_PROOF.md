@@ -35,3 +35,4 @@ This document records the latest validator-backed proof run completed on March 1
 
 - A normal user transfer from the blacklisted source still fails under the transfer hook with `SourceBlacklisted` (`0x1773`).
 - Admin seizure succeeds because the transfer hook now recognizes the stablecoin config PDA as the authorized permanent-delegate path for compliance seizure.
+- The validator-backed integration suite in `test/onchain.integration.test.js` passes for both the SSS-1 and SSS-2 happy paths.

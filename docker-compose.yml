@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  mint-burn:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["node", "services/mint-burn.js"]
+    environment:
+      PORT: 8081
+      SSS_RPC_URL: ${SSS_RPC_URL:-http://host.docker.internal:8899}
+      SSS_STATE_PATH: ${SSS_STATE_PATH:-/app/.sss-chain.json}
+      SSS_KEYPAIR: ${SSS_KEYPAIR:-/app/.keys/id.json}
+      SSS_SERVICE_DATA_DIR: /app/.services-data
+    ports:
+      - "8081:8081"
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  compliance:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["node", "services/compliance.js"]
+    environment:
+      PORT: 8082
+      SSS_RPC_URL: ${SSS_RPC_URL:-http://host.docker.internal:8899}
+      SSS_STATE_PATH: ${SSS_STATE_PATH:-/app/.sss-chain.json}
+      SSS_KEYPAIR: ${SSS_KEYPAIR:-/app/.keys/id.json}
+      SSS_SERVICE_DATA_DIR: /app/.services-data
+    ports:
+      - "8082:8082"
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  indexer:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["node", "services/indexer.js"]
+    environment:
+      PORT: 8083
+      SSS_RPC_URL: ${SSS_RPC_URL:-http://host.docker.internal:8899}
+      SSS_STATE_PATH: ${SSS_STATE_PATH:-/app/.sss-chain.json}
+      SSS_KEYPAIR: ${SSS_KEYPAIR:-/app/.keys/id.json}
+      SSS_SERVICE_DATA_DIR: /app/.services-data
+      SSS_WEBHOOK_URL: http://webhook:8084/dispatch
+    ports:
+      - "8083:8083"
+    depends_on:
+      - webhook
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  webhook:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["node", "services/webhook.js"]
+    environment:
+      PORT: 8084
+      SSS_SERVICE_DATA_DIR: /app/.services-data
+    ports:
+      - "8084:8084"
+    volumes:
+      - .:/app
+      - /app/node_modules

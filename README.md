@@ -18,6 +18,7 @@ I attempted to clone the suggested reference repository (`Samswitchy/solana-vaul
 ```bash
 npm install
 npm test
+npm run test:integration
 ./bin/sss-token.js init --preset sss-2
 ./bin/sss-token.js minters add desk-1 1000000
 ./bin/sss-token.js mint alice 500000
@@ -70,6 +71,30 @@ This revision now includes:
 - A chain-enabled SDK client that creates Token-2022 mints, initializes metadata, and sends Anchor transactions
 - A chain-enabled CLI that persists deployment metadata and executes RPC-backed operator commands
 - Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader commands
+- Validator-backed integration tests for SSS-1 and SSS-2 via `npm run test:integration`
+- A Dockerized backend service skeleton for mint/burn, compliance, indexing, and webhooks
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 
-Current remaining gaps: validator-backed Anchor integration tests, devnet deployment evidence, and the required backend service/Docker deliverables.
+Current remaining gaps: funded devnet deployment evidence and expanding the backend skeleton into full production workflows.
+
+## Backend Services
+
+The repo now includes:
+
+- `services/mint-burn.js`
+- `services/compliance.js`
+- `services/indexer.js`
+- `services/webhook.js`
+- `docker-compose.yml`
+
+Run the stack with:
+
+```bash
+docker compose up --build
+```
+
+For a scripted devnet attempt, use:
+
+```bash
+./scripts/devnet-deploy.sh
+```

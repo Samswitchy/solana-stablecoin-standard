@@ -51,3 +51,28 @@ sss-token seize <address> --to <treasury> --amount 1000000
 ```
 
 `--state` stores either local simulator data or deployed chain metadata, depending on the mode used during `init`.
+
+## Integration Tests
+
+```bash
+anchor build
+npm run test:integration
+```
+
+This suite validates:
+
+- SSS-1 mint -> freeze -> thaw
+- SSS-2 mint -> blacklist -> blocked transfer -> seize
+
+## Backend Stack
+
+```bash
+docker compose up --build
+```
+
+Default service ports:
+
+- `mint-burn`: `8081`
+- `compliance`: `8082`
+- `indexer`: `8083`
+- `webhook`: `8084`

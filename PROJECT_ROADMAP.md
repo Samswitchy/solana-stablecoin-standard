@@ -44,7 +44,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ `SSS-2.md`
 - ✅ `COMPLIANCE.md`
 - ✅ `API.md`
-- 🟡 Finalize docs once devnet proof and backend deliverables are complete
+- 🟡 Finalize docs once devnet proof is complete
 
 ## 5) Testing
 
@@ -54,8 +54,8 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Rust unit tests for on-chain role/compliance validation
 - ✅ Localnet validator proof for deploy, init, minter quota, mint, blacklist, blocked transfer enforcement, seize, and status flows
 - 🟡 Expand negative-path and edge-case coverage
-- ⬜ Add Anchor program instruction tests
-- 🟡 Add full end-to-end preset integration tests against local validator/devnet
+- ⬜ Add native Anchor instruction tests beyond the current Node validator harness
+- ✅ Add full end-to-end preset integration tests against a local validator
 - ⬜ Add fuzz/property testing strategy
 
 ## 6) On-Chain Programs (Production Core)
@@ -77,16 +77,16 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## 8) Backend Services and Deployment Ops
 
-- ⬜ Implement mint/burn orchestration service
-- ⬜ Implement event listener/indexer
-- ⬜ Implement compliance service for SSS-2 workflows
-- ⬜ Implement webhook service with retries and failure handling
-- ⬜ Add Dockerfiles and docker-compose setup
-- ⬜ Add health checks and structured logging
+- ✅ Implement mint/burn orchestration service skeleton
+- ✅ Implement event listener/indexer skeleton
+- ✅ Implement compliance service for SSS-2 workflows
+- ✅ Implement webhook service with retries and failure handling
+- ✅ Add Dockerfiles and docker-compose setup
+- ✅ Add health checks and structured logging
 
 ## 9) Devnet Proof and Submission Assets
 
-- ⬜ Deploy program(s) to devnet and record Program IDs
+- 🟡 Deploy program(s) to devnet and record Program IDs
 - 🟡 Capture example transaction signatures for required flows
 - ✅ Add reproducible scripts for deployment and smoke checks
 - ✅ Record localnet proof artifacts in `LOCALNET_PROOF.md`
@@ -102,10 +102,11 @@ The project now has both:
 - a strong local simulator foundation with SDK + CLI + docs + tests
 - deployed and locally verified `stablecoin-core` and `transfer-hook` programs
 - a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader flows
+- validator-backed integration tests for both SSS-1 and SSS-2 happy paths
+- a Dockerized backend service skeleton covering mint/burn, compliance, indexer, and webhook flows
 - recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
 
 ## Immediate Next Steps
 
-- Add Anchor integration tests that cover the SSS-1 and SSS-2 happy paths against a validator.
 - Run the same proof flow on devnet and record final Program IDs and transaction signatures.
-- Build the required backend services and Docker Compose stack for the full bounty scope.
+- Extend the backend skeleton into fuller production workflows and external screening integrations.

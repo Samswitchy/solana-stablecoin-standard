@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     self, Burn, FreezeAccount, Mint, MintTo, ThawAccount, TokenAccount, TokenInterface,
-    TransferChecked,
 };
 
 declare_id!("DNU6Zz4eBYdh5gMGppGrGXMjA3atST2dSsiX6XZCF7v1");
@@ -331,7 +330,10 @@ pub mod stablecoin_core {
         Ok(())
     }
 
-    pub fn seize(ctx: Context<SeizeTokens>, amount: u64) -> Result<()> {
+    pub fn seize<'info>(
+        ctx: Context<'_, '_, '_, 'info, SeizeTokens<'info>>,
+        amount: u64,
+    ) -> Result<()> {
         require!(amount > 0, StablecoinError::InvalidAmount);
 
         let config = &ctx.accounts.config;
@@ -368,18 +370,17 @@ pub mod stablecoin_core {
         let config_bump = [config.bump];
         let signer_seed_slice: &[&[u8]] = &[b"config", config_mint.as_ref(), &config_bump];
         let signer_seeds = &[signer_seed_slice];
-        let cpi_accounts = TransferChecked {
-            from: ctx.accounts.source.to_account_info(),
-            mint: ctx.accounts.mint.to_account_info(),
-            to: ctx.accounts.destination.to_account_info(),
-            authority: config.to_account_info(),
-        };
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            cpi_accounts,
+        anchor_spl::token_2022::spl_token_2022::onchain::invoke_transfer_checked(
+            ctx.accounts.token_program.key,
+            ctx.accounts.source.to_account_info(),
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.destination.to_account_info(),
+            config.to_account_info(),
+            ctx.remaining_accounts,
+            amount,
+            ctx.accounts.mint.decimals,
             signer_seeds,
-        );
-        token_interface::transfer_checked(cpi_ctx, amount, ctx.accounts.mint.decimals)?;
+        )?;
 
         emit!(Seized {
             mint: config.mint,

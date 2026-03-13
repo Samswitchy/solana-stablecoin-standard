@@ -3,7 +3,7 @@ members = ["programs/*"]
 resolver = "2"
 
 [workspace.dependencies]
-anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-lang = { version = "0.31.1", features = ["init-if-needed", "interface-instructions"] }
 anchor-spl = "0.31.1"
 
 [profile.release]

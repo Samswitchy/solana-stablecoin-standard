@@ -50,6 +50,20 @@ node ./bin/sss-token.js status \
   --keypair "$KEYPAIR_PATH" \
   --state "$STATE_PATH"
 
-echo
-echo "Optional next step once transfer-hook extra-account-meta wiring is complete:"
-echo "node ./bin/sss-token.js seize \"$AUTHORITY_PUBKEY\" --to \"$TREASURY_PUBKEY\" --amount 100000 --rpc-url \"$RPC_URL\" --keypair \"$KEYPAIR_PATH\" --state \"$STATE_PATH\""
+if node ./bin/sss-token.js transfer "$AUTHORITY_PUBKEY" "$TREASURY_PUBKEY" 1 \
+  --rpc-url "$RPC_URL" \
+  --keypair "$KEYPAIR_PATH" \
+  --state "$STATE_PATH"; then
+  echo "Expected blacklist-enforced transfer failure, but transfer succeeded."
+  exit 1
+fi
+
+node ./bin/sss-token.js seize "$AUTHORITY_PUBKEY" --to "$TREASURY_PUBKEY" --amount 100000 \
+  --rpc-url "$RPC_URL" \
+  --keypair "$KEYPAIR_PATH" \
+  --state "$STATE_PATH"
+
+node ./bin/sss-token.js holders \
+  --rpc-url "$RPC_URL" \
+  --keypair "$KEYPAIR_PATH" \
+  --state "$STATE_PATH"

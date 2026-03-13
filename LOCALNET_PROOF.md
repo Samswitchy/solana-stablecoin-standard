@@ -9,23 +9,29 @@ This document records the latest validator-backed proof run completed on March 1
 
 ## Deployment Signatures
 
-- `stablecoin_core`: `4EZkimAYUd3W6eBNUatsdsZRKFDzhNoScbzJ5wfJiEtuPqyYDUcKntNPd2GHtWobnS6291E9MZoU3QTh76JhfZKV`
-- `transfer_hook`: `3vCXXcrdgCjHR8mWkuc1yvNzEbrAqwZyFd4PCACFvTeKYssG3RT1hr9SRKKptF2HmTHsxqnGDYLum5GpnfTREBXD`
+- `stablecoin_core`: `mSdejVZbsPTp8uNRgrqdm2FHGhK7XEBq2ts4msGkAFuFWggokXzNC7mRcWK5Ag79Dhk1XCEUrKEZAKe27WgoYNj`
+- `transfer_hook`: `jcTkJjMLM2xUCzoSnyk1WLRHFqdo1Qe2pWVAeU1uXJUJ3KtrivK8P9MiFW5G5nCWnU66rgAo4ChiKhFSpj1ZHht`
 
 ## CLI Smoke Signatures
 
-- `minters add`: `L274MUJtj81s2JPHAMR65t4oPsA4zrtAH6KwofKktreGHyuGysogkVVyet1CbGdyfYWrxK836LxSQ8S6yp4Soot`
-- `mint`: `s9dpE5332gPeSmCysKH3JdVbjdgE6drFAS8ikK5jn7ym61qo2XTHTZasbWzMmqyYwJP7atuY9p2VGBsmwirKyPj`
-- `blacklist add`: `5sE4YYqxZyRSvGwLTE2gW7pZbyycVtR8G5ND3YnC1UzLLQHN3MxfFTXSfTXEUaZ7qHdhJXdVvbNCkyM7MABRorqF`
+- `minters add`: `3m9gg7TA3aYDM6MZJa3PtxtLrkZ9FaTCp4XpEpQwddny2q9CQMavJpv5wUMdGakWVssyW1ied3fWrR4G61nxisCH`
+- `mint`: `2RF646rLEL4jfmMbL3YMH8UtRLxyvMtGUcq315Yewt1Pdus6ALZG4fsJBWYMpKQMcq7JJtzEa6bJwsor7nAam4Wv`
+- `blacklist add`: `32zbfucrf1ausDLbtSTbP61ckyduGvQr2fbhGRbmu2KFmeo5QDjLsHYkvnh4erLUw4QQxgaHEaehpmPNmRqaukfk`
+- `seize`: `616UNGEke59Doa9bwM98EFDG6mTsPPGDqxztKvRefnVX2WgECdwhG3QUrN7RESfXCQJrUbpvBYLhUjGAR23GMf5s`
 
 ## Result Snapshot
 
-- Mint: `ALyeeN6BTZuxvfXj54zrMn7Kd2g5joi6qeh2u4bjd1ZM`
-- Config PDA: `DCnz7Suwpd79tiffKeBTFUq6hWJbqNx9RaT67K6bmEpN`
-- Hook config PDA: `E5YQ4chcZnDsEtegeRJ4RkwTh4P7gtPT4NUL7LNAF9R5`
+- Mint: `J9imL6fo948AZXNd5sLkqnvPsbHQjmbsxb7HT1Aivtan`
+- Config PDA: `7oK7UhYQtd9Qo4Qup4LSxZsDw4yhnM3D2vdYBFFvaavs`
+- Hook config PDA: `Cb3uwUjD823a7zxqdBsPRFDKG9ymmmgTH1yx7dvKxbNK`
+- Hook extra-account-meta PDA: `2pJaRHvpbXYRi62mUzcgyaZj2b3bwQKNkRoG2CncwxWx`
 - Total supply after mint: `500000`
+- Total supply after seize: `500000`
 - Blacklist size after compliance action: `1`
+- Source holder balance after seize: `400000`
+- Treasury holder balance after seize: `100000`
 
-## Known Gap
+## Enforcement Notes
 
-`seize` currently reaches the on-chain core program but fails once Token-2022 attempts a hook-enforced transfer, because the transfer-hook extra-account-meta wiring is not yet supplied to the CPI path. The remaining work is in the hook account meta setup, not in CLI or SDK transport.
+- A normal user transfer from the blacklisted source still fails under the transfer hook with `SourceBlacklisted` (`0x1773`).
+- Admin seizure succeeds because the transfer hook now recognizes the stablecoin config PDA as the authorized permanent-delegate path for compliance seizure.

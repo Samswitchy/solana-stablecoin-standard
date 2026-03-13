@@ -85,6 +85,6 @@ Compliance operations fail with explicit errors when the compliance module is di
 - `listHolders(minBalance)` for holder snapshots
 - `getAuditLog(action?)` for action-specific audit trails
 
-## Current On-Chain Caveat
+## Current On-Chain Status
 
-The transfer-hook program is deployed and initialized, but full SPL transfer-hook extra-account-meta wiring is still pending for hook-enforced CPI flows such as on-chain `seize`.
+The transfer-hook program is deployed and initialized, and localnet proof now covers both blacklist-enforced transfer blocking and admin seizure through the permanent-delegate path.

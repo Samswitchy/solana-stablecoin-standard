@@ -22,7 +22,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Add minter quota model and checks
 - ✅ Add compliance surface (`blacklistAdd`, `blacklistRemove`, `seize`)
 - ✅ Add audit log and holder/minter query methods
-- 🟡 Keep API shape stable for migration to real on-chain transaction builders
+- ✅ Keep API shape stable for migration to real on-chain transaction builders
 
 ## 3) CLI (Operator Workflow)
 
@@ -44,7 +44,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ `SSS-2.md`
 - ✅ `COMPLIANCE.md`
 - ✅ `API.md`
-- 🟡 Update all docs once transfer-hook CPI wiring and devnet proof are complete
+- 🟡 Finalize docs once devnet proof and backend deliverables are complete
 
 ## 5) Testing
 
@@ -52,6 +52,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ SDK behavior tests
 - ✅ CLI persistence/integration-style tests
 - ✅ Rust unit tests for on-chain role/compliance validation
+- ✅ Localnet validator proof for deploy, init, minter quota, mint, blacklist, blocked transfer enforcement, seize, and status flows
 - 🟡 Expand negative-path and edge-case coverage
 - ⬜ Add Anchor program instruction tests
 - 🟡 Add full end-to-end preset integration tests against local validator/devnet
@@ -61,10 +62,10 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 - ✅ Create Anchor workspace and program crate(s)
 - ✅ Implement stablecoin config account and role-based access control on-chain
-- 🟡 Implement core instructions on-chain (`initialize`, `mint`, `burn`, `freeze/thaw`, `pause/unpause`, role updates)
-- 🟡 Implement SSS-2 compliance instructions on-chain (`add/remove blacklist`, `seize`)
+- ✅ Implement core instructions on-chain (`initialize`, `mint`, `burn`, `freeze/thaw`, `pause/unpause`, role updates)
+- ✅ Implement SSS-2 compliance instructions on-chain (`add/remove blacklist`, `seize`)
 - ✅ Ensure SSS-2 instructions fail gracefully when compliance disabled
-- 🟡 Implement/attach transfer-hook enforcement path
+- ✅ Implement/attach transfer-hook enforcement path
 
 ## 7) TypeScript SDK (Real Chain Integration)
 
@@ -72,6 +73,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Add account/state readers from chain
 - 🟡 Add explicit error decoding and typed responses
 - ✅ Keep backwards-compatible high-level API ergonomics
+- ✅ Add chain deployment state serialization for CLI/operator reuse
 
 ## 8) Backend Services and Deployment Ops
 
@@ -87,6 +89,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ⬜ Deploy program(s) to devnet and record Program IDs
 - 🟡 Capture example transaction signatures for required flows
 - ✅ Add reproducible scripts for deployment and smoke checks
+- ✅ Record localnet proof artifacts in `LOCALNET_PROOF.md`
 - ⬜ Finalize submission-ready documentation
 - ⬜ Record short showcase video with strongest points of implementation
 
@@ -97,7 +100,12 @@ This roadmap tracks what is already done and what remains to reach a production-
 The project now has both:
 
 - a strong local simulator foundation with SDK + CLI + docs + tests
-- a compiling Anchor workspace with `stablecoin-core` and `transfer-hook` programs
-- a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, status, and reader flows
+- deployed and locally verified `stablecoin-core` and `transfer-hook` programs
+- a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader flows
+- recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
 
-The next major phase is transfer-hook extra-account-meta wiring, Anchor integration tests, and devnet proof.
+## Immediate Next Steps
+
+- Add Anchor integration tests that cover the SSS-1 and SSS-2 happy paths against a validator.
+- Run the same proof flow on devnet and record final Program IDs and transaction signatures.
+- Build the required backend services and Docker Compose stack for the full bounty scope.

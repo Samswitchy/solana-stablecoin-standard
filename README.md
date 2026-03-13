@@ -69,7 +69,7 @@ This revision now includes:
 - A real Anchor workspace with PDA-based config, minter quota, blacklist, pause, seize, and role management flows
 - A chain-enabled SDK client that creates Token-2022 mints, initializes metadata, and sends Anchor transactions
 - A chain-enabled CLI that persists deployment metadata and executes RPC-backed operator commands
-- Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, status, and reader commands
+- Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader commands
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 
-Current remaining gap: transfer-hook extra-account meta wiring for full hook-enforced `transfer` and `seize` CPI flows, plus devnet deployment evidence.
+Current remaining gaps: validator-backed Anchor integration tests, devnet deployment evidence, and the required backend service/Docker deliverables.

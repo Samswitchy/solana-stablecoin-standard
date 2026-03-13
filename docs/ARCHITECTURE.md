@@ -43,4 +43,4 @@ This repo is currently in a hybrid phase:
 - The local simulator still exists for fast operator workflow iteration.
 - The repo now also ships a real on-chain client and CLI path backed by Anchor programs and Token-2022.
 - The Anchor workspace provides the current on-chain control plane for config, quotas, compliance flags, mint/burn/freeze operations, and blacklist management.
-- The remaining protocol gap is full transfer-hook extra-account-meta wiring for hook-enforced CPI paths such as on-chain `seize`.
+- The transfer-hook layer now enforces blacklist checks for normal transfers while still allowing compliance seizure through the stablecoin config PDA.

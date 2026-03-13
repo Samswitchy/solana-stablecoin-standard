@@ -107,6 +107,13 @@ function deriveHookConfigPda(mint, hookProgramId) {
   return PublicKey.findProgramAddressSync([Buffer.from("hook-config"), mint.toBuffer()], hookProgramId);
 }
 
+function deriveHookExtraAccountMetaListPda(mint, hookProgramId) {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("extra-account-metas"), mint.toBuffer()],
+    hookProgramId
+  );
+}
+
 function deriveMinterQuotaPda(config, minter, stablecoinProgramId) {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("minter"), config.toBuffer(), minter.toBuffer()],
@@ -171,6 +178,10 @@ export class OnchainSolanaStablecoin {
     const mint = Keypair.generate();
     const [configAddress] = deriveConfigPda(mint.publicKey, stablecoinProgramId);
     const [hookConfig] = deriveHookConfigPda(mint.publicKey, transferHookProgramId);
+    const [hookExtraAccountMetaList] = deriveHookExtraAccountMetaListPda(
+      mint.publicKey,
+      transferHookProgramId
+    );
 
     const extensions = [ExtensionType.MetadataPointer];
     if (finalConfig.extensions?.permanentDelegate) {
@@ -335,6 +346,7 @@ export class OnchainSolanaStablecoin {
           authority: authority.publicKey,
           mint: mint.publicKey,
           config: hookConfig,
+          extraAccountMetaList: hookExtraAccountMetaList,
           systemProgram: SystemProgram.programId,
         })
         .signers([authority])
@@ -349,6 +361,7 @@ export class OnchainSolanaStablecoin {
         mint: mint.publicKey,
         config: configAddress,
         hookConfig: finalConfig.extensions?.transferHook ? hookConfig : null,
+        hookExtraAccountMetaList: finalConfig.extensions?.transferHook ? hookExtraAccountMetaList : null,
       },
       provider,
       programs: {
@@ -379,14 +392,20 @@ export class OnchainSolanaStablecoin {
     );
     const stablecoinProgram = new Program(idlWithAddress("stablecoin_core", stablecoinProgramId), provider);
     const hookProgram = new Program(idlWithAddress("transfer_hook", transferHookProgramId), provider);
+    const mint = toPublicKey(options.mint, "mint");
     return new OnchainSolanaStablecoin({
       connection,
       authority,
       config: options.config ?? {},
       addresses: {
-        mint: toPublicKey(options.mint, "mint"),
+        mint,
         config: toPublicKey(options.configAddress, "config"),
         hookConfig: options.hookConfig ? toPublicKey(options.hookConfig, "hook config") : null,
+        hookExtraAccountMetaList: options.hookExtraAccountMetaList
+          ? toPublicKey(options.hookExtraAccountMetaList, "hook extra account meta list")
+          : options.hookConfig
+            ? deriveHookExtraAccountMetaListPda(mint, transferHookProgramId)[0]
+            : null,
       },
       provider,
       programs: {
@@ -406,6 +425,7 @@ export class OnchainSolanaStablecoin {
       mint: this.addresses.mint.toBase58(),
       configAddress: this.addresses.config.toBase58(),
       hookConfig: this.addresses.hookConfig?.toBase58() ?? null,
+      hookExtraAccountMetaList: this.addresses.hookExtraAccountMetaList?.toBase58() ?? null,
       programIds: {
         stablecoinCore: this.programs.stablecoinProgramId.toBase58(),
         transferHook: this.programs.transferHookProgramId.toBase58(),
@@ -842,6 +862,26 @@ export class OnchainSolanaStablecoin {
           fromOwner,
           this.programs.stablecoinProgramId
         );
+        const remainingAccounts = [];
+        if (this.addresses.hookConfig && this.addresses.hookExtraAccountMetaList) {
+          const [sourceHookBlacklist] = deriveHookBlacklistPda(
+            this.addresses.hookConfig,
+            fromOwner,
+            this.programs.transferHookProgramId
+          );
+          const [destinationHookBlacklist] = deriveHookBlacklistPda(
+            this.addresses.hookConfig,
+            toOwner,
+            this.programs.transferHookProgramId
+          );
+          remainingAccounts.push(
+            { pubkey: this.programs.transferHookProgramId, isWritable: false, isSigner: false },
+            { pubkey: this.addresses.hookExtraAccountMetaList, isWritable: false, isSigner: false },
+            { pubkey: this.addresses.hookConfig, isWritable: false, isSigner: false },
+            { pubkey: sourceHookBlacklist, isWritable: false, isSigner: false },
+            { pubkey: destinationHookBlacklist, isWritable: false, isSigner: false }
+          );
+        }
         const signature = await this.programs.stablecoin.methods
           .seize(amountToBn(amount))
           .accounts({
@@ -854,6 +894,7 @@ export class OnchainSolanaStablecoin {
             blacklistEntry,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
           })
+          .remainingAccounts(remainingAccounts)
           .signers(signer.publicKey.equals(this.authority.publicKey) ? [] : [signer])
           .rpc();
         return {

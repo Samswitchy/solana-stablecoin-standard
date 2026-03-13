@@ -51,6 +51,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Unit tests for presets
 - ✅ SDK behavior tests
 - ✅ CLI persistence/integration-style tests
+- ✅ Rust unit tests for on-chain role/compliance validation
 - 🟡 Expand negative-path and edge-case coverage
 - ⬜ Add Anchor program instruction tests
 - ⬜ Add full end-to-end preset integration tests against local validator/devnet

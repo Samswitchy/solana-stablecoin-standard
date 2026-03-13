@@ -80,7 +80,42 @@ pub mod stablecoin_core {
         Ok(())
     }
 
+    pub fn transfer_authority(
+        ctx: Context<TransferAuthority>,
+        new_master_authority: Pubkey,
+    ) -> Result<()> {
+        let config = &mut ctx.accounts.config;
+        config.assert_master(ctx.accounts.master_authority.key())?;
+        config.master_authority = new_master_authority;
+
+        emit!(MasterAuthorityTransferred {
+            mint: config.mint,
+            previous_master_authority: ctx.accounts.master_authority.key(),
+            new_master_authority,
+        });
+
+        Ok(())
+    }
+
     pub fn set_minter_quota(ctx: Context<SetMinterQuota>, max_allowance: u64) -> Result<()> {
+        require!(max_allowance > 0, StablecoinError::InvalidAmount);
+
+        let config = &ctx.accounts.config;
+        config.assert_mint_admin(ctx.accounts.authority.key())?;
+
+        let quota = &mut ctx.accounts.minter_quota;
+        quota.bump = ctx.bumps.minter_quota;
+        quota.config = config.key();
+        quota.minter = ctx.accounts.minter.key();
+        quota.max_allowance = max_allowance;
+        if quota.minted_amount > max_allowance {
+            quota.minted_amount = max_allowance;
+        }
+
+        Ok(())
+    }
+
+    pub fn update_minter(ctx: Context<SetMinterQuota>, max_allowance: u64) -> Result<()> {
         require!(max_allowance > 0, StablecoinError::InvalidAmount);
 
         let config = &ctx.accounts.config;
@@ -274,10 +309,7 @@ pub mod stablecoin_core {
     }
 
     pub fn add_to_blacklist(ctx: Context<AddToBlacklist>, reason: String) -> Result<()> {
-        require!(
-            !reason.is_empty() && reason.len() <= BlacklistEntry::MAX_REASON_LEN,
-            StablecoinError::ReasonTooLong
-        );
+        validate_reason(&reason, BlacklistEntry::MAX_REASON_LEN)?;
 
         let config = &ctx.accounts.config;
         config.assert_compliance_enabled()?;
@@ -394,6 +426,14 @@ impl InitializeParams {
         );
         Ok(())
     }
+}
+
+fn validate_reason(reason: &str, max_len: usize) -> Result<()> {
+    require!(
+        !reason.is_empty() && reason.len() <= max_len,
+        StablecoinError::ReasonTooLong
+    );
+    Ok(())
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default)]
@@ -564,6 +604,13 @@ pub struct Initialize<'info> {
 
 #[derive(Accounts)]
 pub struct UpdateRoles<'info> {
+    pub master_authority: Signer<'info>,
+    #[account(mut, seeds = [b"config", config.mint.as_ref()], bump = config.bump)]
+    pub config: Account<'info, StablecoinConfig>,
+}
+
+#[derive(Accounts)]
+pub struct TransferAuthority<'info> {
     pub master_authority: Signer<'info>,
     #[account(mut, seeds = [b"config", config.mint.as_ref()], bump = config.bump)]
     pub config: Account<'info, StablecoinConfig>,
@@ -756,6 +803,13 @@ pub struct Seized {
     pub amount: u64,
 }
 
+#[event]
+pub struct MasterAuthorityTransferred {
+    pub mint: Pubkey,
+    pub previous_master_authority: Pubkey,
+    pub new_master_authority: Pubkey,
+}
+
 #[error_code]
 pub enum StablecoinError {
     #[msg("The provided master authority does not match the signer.")]
@@ -806,4 +860,106 @@ pub enum StablecoinError {
     InvalidBlacklistAccount,
     #[msg("The source account owner does not match the blacklisted wallet.")]
     BlacklistOwnerMismatch,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_config() -> StablecoinConfig {
+        StablecoinConfig {
+            bump: 1,
+            mint: Pubkey::new_unique(),
+            name: "Sample USD".to_string(),
+            symbol: "sUSD".to_string(),
+            uri: "https://example.com/metadata.json".to_string(),
+            decimals: 6,
+            enable_permanent_delegate: false,
+            enable_transfer_hook: false,
+            default_account_frozen: false,
+            paused: false,
+            master_authority: Pubkey::new_unique(),
+            mint_authority: Pubkey::new_unique(),
+            burner_authority: Pubkey::new_unique(),
+            pauser_authority: Pubkey::new_unique(),
+            freeze_authority: Pubkey::new_unique(),
+            blacklister_authority: Pubkey::new_unique(),
+            seizer_authority: Pubkey::new_unique(),
+        }
+    }
+
+    #[test]
+    fn initialize_params_reject_empty_name() {
+        let params = InitializeParams {
+            name: String::new(),
+            symbol: "USD".to_string(),
+            uri: String::new(),
+            decimals: 6,
+            enable_permanent_delegate: false,
+            enable_transfer_hook: false,
+            default_account_frozen: false,
+            master_authority: Pubkey::new_unique(),
+            mint_authority: Pubkey::new_unique(),
+            burner_authority: Pubkey::new_unique(),
+            pauser_authority: Pubkey::new_unique(),
+            freeze_authority: Pubkey::new_unique(),
+            blacklister_authority: Pubkey::new_unique(),
+            seizer_authority: Pubkey::new_unique(),
+        };
+
+        assert!(params.validate().is_err());
+    }
+
+    #[test]
+    fn compliance_flagging_requires_sss2_features() {
+        let config = sample_config();
+        assert!(!config.compliance_enabled());
+        assert!(config.assert_compliance_enabled().is_err());
+    }
+
+    #[test]
+    fn transfer_hook_or_delegate_enables_compliance_paths() {
+        let mut config = sample_config();
+        config.enable_transfer_hook = true;
+        assert!(config.compliance_enabled());
+        assert!(config.assert_compliance_enabled().is_ok());
+    }
+
+    #[test]
+    fn pause_guard_blocks_mutating_paths() {
+        let mut config = sample_config();
+        config.paused = true;
+        assert!(config.assert_not_paused().is_err());
+    }
+
+    #[test]
+    fn role_checks_accept_expected_authorities() {
+        let config = sample_config();
+        assert!(config.assert_master(config.master_authority).is_ok());
+        assert!(config.assert_mint_admin(config.mint_authority).is_ok());
+        assert!(config.assert_burner(config.burner_authority).is_ok());
+        assert!(config.assert_pauser(config.pauser_authority).is_ok());
+        assert!(config.assert_freezer(config.freeze_authority).is_ok());
+        assert!(config
+            .assert_blacklister(config.blacklister_authority)
+            .is_ok());
+        assert!(config.assert_seizer(config.seizer_authority).is_ok());
+    }
+
+    #[test]
+    fn role_checks_reject_unrelated_signer() {
+        let config = sample_config();
+        let outsider = Pubkey::new_unique();
+        assert!(config.assert_master(outsider).is_err());
+        assert!(config.assert_blacklister(outsider).is_err());
+        assert!(config.assert_seizer(outsider).is_err());
+    }
+
+    #[test]
+    fn blacklist_reason_must_be_present_and_bounded() {
+        assert!(validate_reason("", BlacklistEntry::MAX_REASON_LEN).is_err());
+        assert!(validate_reason("OFAC", BlacklistEntry::MAX_REASON_LEN).is_ok());
+        let too_long = "x".repeat(BlacklistEntry::MAX_REASON_LEN + 1);
+        assert!(validate_reason(&too_long, BlacklistEntry::MAX_REASON_LEN).is_err());
+    }
 }

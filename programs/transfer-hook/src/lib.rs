@@ -34,10 +34,7 @@ pub mod transfer_hook {
     }
 
     pub fn add_to_blacklist(ctx: Context<AddToBlacklist>, reason: String) -> Result<()> {
-        require!(
-            !reason.is_empty() && reason.len() <= HookBlacklistEntry::MAX_REASON_LEN,
-            HookError::ReasonTooLong
-        );
+        validate_reason(&reason, HookBlacklistEntry::MAX_REASON_LEN)?;
 
         let config = &ctx.accounts.config;
         require_keys_eq!(
@@ -66,30 +63,16 @@ pub mod transfer_hook {
     }
 
     pub fn validate_transfer(ctx: Context<ValidateTransfer>, _amount: u64) -> Result<()> {
-        let config = &ctx.accounts.config;
-        if !config.enforce_blacklist {
-            return Ok(());
-        }
-
-        if let Some(entry) = &ctx.accounts.source_blacklist {
-            require_keys_eq!(
-                entry.wallet,
-                ctx.accounts.source_owner.key(),
-                HookError::BlacklistMismatch
-            );
-            return err!(HookError::SourceBlacklisted);
-        }
-
-        if let Some(entry) = &ctx.accounts.destination_blacklist {
-            require_keys_eq!(
-                entry.wallet,
-                ctx.accounts.destination_owner.key(),
-                HookError::BlacklistMismatch
-            );
-            return err!(HookError::DestinationBlacklisted);
-        }
-
-        Ok(())
+        validate_blacklist_guard(
+            ctx.accounts.config.enforce_blacklist,
+            ctx.accounts.source_owner.key(),
+            ctx.accounts.destination_owner.key(),
+            ctx.accounts.source_blacklist.as_ref().map(|entry| &**entry),
+            ctx.accounts
+                .destination_blacklist
+                .as_ref()
+                .map(|entry| &**entry),
+        )
     }
 }
 
@@ -97,6 +80,42 @@ pub mod transfer_hook {
 pub struct HookInitializeParams {
     pub label: String,
     pub enforce_blacklist: bool,
+}
+
+fn validate_reason(reason: &str, max_len: usize) -> Result<()> {
+    require!(
+        !reason.is_empty() && reason.len() <= max_len,
+        HookError::ReasonTooLong
+    );
+    Ok(())
+}
+
+fn validate_blacklist_guard(
+    enforce_blacklist: bool,
+    source_owner: Pubkey,
+    destination_owner: Pubkey,
+    source_blacklist: Option<&HookBlacklistEntry>,
+    destination_blacklist: Option<&HookBlacklistEntry>,
+) -> Result<()> {
+    if !enforce_blacklist {
+        return Ok(());
+    }
+
+    if let Some(entry) = source_blacklist {
+        require_keys_eq!(entry.wallet, source_owner, HookError::BlacklistMismatch);
+        return err!(HookError::SourceBlacklisted);
+    }
+
+    if let Some(entry) = destination_blacklist {
+        require_keys_eq!(
+            entry.wallet,
+            destination_owner,
+            HookError::BlacklistMismatch
+        );
+        return err!(HookError::DestinationBlacklisted);
+    }
+
+    Ok(())
 }
 
 #[account]
@@ -215,4 +234,62 @@ pub enum HookError {
     DestinationBlacklisted,
     #[msg("The blacklist entry does not match the provided account.")]
     BlacklistMismatch,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn blacklist_entry(wallet: Pubkey) -> HookBlacklistEntry {
+        HookBlacklistEntry {
+            bump: 1,
+            config: Pubkey::new_unique(),
+            wallet,
+            reason: "watchlist".to_string(),
+        }
+    }
+
+    #[test]
+    fn reason_validation_rejects_invalid_values() {
+        assert!(validate_reason("", HookBlacklistEntry::MAX_REASON_LEN).is_err());
+        assert!(validate_reason("sanctions", HookBlacklistEntry::MAX_REASON_LEN).is_ok());
+        let long_reason = "x".repeat(HookBlacklistEntry::MAX_REASON_LEN + 1);
+        assert!(validate_reason(&long_reason, HookBlacklistEntry::MAX_REASON_LEN).is_err());
+    }
+
+    #[test]
+    fn blacklist_guard_allows_transfers_when_disabled() {
+        let source = Pubkey::new_unique();
+        let destination = Pubkey::new_unique();
+        let entry = blacklist_entry(source);
+
+        assert!(validate_blacklist_guard(false, source, destination, Some(&entry), None).is_ok());
+    }
+
+    #[test]
+    fn blacklist_guard_blocks_blacklisted_source() {
+        let source = Pubkey::new_unique();
+        let destination = Pubkey::new_unique();
+        let entry = blacklist_entry(source);
+
+        assert!(validate_blacklist_guard(true, source, destination, Some(&entry), None).is_err());
+    }
+
+    #[test]
+    fn blacklist_guard_blocks_blacklisted_destination() {
+        let source = Pubkey::new_unique();
+        let destination = Pubkey::new_unique();
+        let entry = blacklist_entry(destination);
+
+        assert!(validate_blacklist_guard(true, source, destination, None, Some(&entry)).is_err());
+    }
+
+    #[test]
+    fn blacklist_guard_rejects_mismatched_entry() {
+        let source = Pubkey::new_unique();
+        let destination = Pubkey::new_unique();
+        let entry = blacklist_entry(Pubkey::new_unique());
+
+        assert!(validate_blacklist_guard(true, source, destination, Some(&entry), None).is_err());
+    }
 }

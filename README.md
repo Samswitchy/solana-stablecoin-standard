@@ -55,5 +55,6 @@ This revision now includes:
 - A real Anchor workspace with PDA-based config, minter quota, blacklist, pause, seize, and role management flows
 - A transfer-hook program scaffold for SSS-2 blacklist enforcement wiring
 - Offline-compilable Rust workspace validation via `cargo check --offline`
+- Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 
 Next milestone: Anchor tests, SDK/CLI RPC wiring, Token-2022 mint bootstrap flows, and devnet deployment evidence.

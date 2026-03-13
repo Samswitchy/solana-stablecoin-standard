@@ -14,6 +14,7 @@
 - PDA-backed stablecoin config account keyed by mint
 - Role-separated authorities for master, mint admin, burner, pauser, freezer, blacklister, and seizer
 - PDA-backed minter quota accounts and blacklist accounts
+- Dedicated authority transfer and minter update flows in the control plane
 - Token-2022 CPI paths for mint, burn, freeze/thaw, and seize
 
 ## Layer 2 — Modules

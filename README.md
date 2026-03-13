@@ -7,7 +7,7 @@ Production-focused open-source foundation for building stablecoins on Solana wit
 - CLI-first operator workflows
 - Compliance-ready extension points
 
-> Current milestone: local execution simulator + standards-first interface contracts. This validates operator workflows and compliance logic before wiring on-chain programs.
+> Current milestone: hybrid foundation. The repo now includes the original local SDK/CLI simulator for workflow iteration plus a first real Anchor workspace with `stablecoin-core` and `transfer-hook` programs.
 
 ## Reference note
 
@@ -41,6 +41,7 @@ Custom state path:
 
 ## Repository Layout
 
+- `programs/` Anchor on-chain programs (`stablecoin-core`, `transfer-hook`)
 - `src/` SDK surface and preset logic
 - `bin/` `sss-token` admin CLI entrypoint
 - `test/` presets + SDK + CLI integration tests
@@ -48,12 +49,11 @@ Custom state path:
 
 ## Current Status
 
-This revision includes an executable in-memory model with:
+This revision now includes:
 
-- Supply/balance accounting (`mint`, `burn`, `transfer`)
-- Pause controls and freeze guards
-- Minter quota lifecycle (`add/remove/list`)
-- Holder listing and audit-log queries
-- SSS-2 blacklist and seize behavior with explicit failure paths
+- An executable in-memory model for SDK and CLI iteration
+- A real Anchor workspace with PDA-based config, minter quota, blacklist, pause, seize, and role management flows
+- A transfer-hook program scaffold for SSS-2 blacklist enforcement wiring
+- Offline-compilable Rust workspace validation via `cargo check --offline`
 
-Next milestone: Anchor programs + transaction wiring + devnet deployment evidence.
+Next milestone: Anchor tests, SDK/CLI RPC wiring, Token-2022 mint bootstrap flows, and devnet deployment evidence.

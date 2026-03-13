@@ -58,12 +58,12 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## 6) On-Chain Programs (Production Core)
 
-- ⬜ Create Anchor workspace and program crate(s)
-- ⬜ Implement stablecoin config account and role-based access control on-chain
-- ⬜ Implement core instructions on-chain (`initialize`, `mint`, `burn`, `freeze/thaw`, `pause/unpause`, role updates)
-- ⬜ Implement SSS-2 compliance instructions on-chain (`add/remove blacklist`, `seize`)
-- ⬜ Ensure SSS-2 instructions fail gracefully when compliance disabled
-- ⬜ Implement/attach transfer-hook enforcement path
+- ✅ Create Anchor workspace and program crate(s)
+- ✅ Implement stablecoin config account and role-based access control on-chain
+- 🟡 Implement core instructions on-chain (`initialize`, `mint`, `burn`, `freeze/thaw`, `pause/unpause`, role updates)
+- 🟡 Implement SSS-2 compliance instructions on-chain (`add/remove blacklist`, `seize`)
+- ✅ Ensure SSS-2 instructions fail gracefully when compliance disabled
+- 🟡 Implement/attach transfer-hook enforcement path
 
 ## 7) TypeScript SDK (Real Chain Integration)
 
@@ -93,4 +93,9 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## Current Snapshot
 
-The project has a strong local simulator foundation with SDK + CLI + docs + tests completed, and is ready for the next major phase: full on-chain Anchor implementation and real transaction wiring.
+The project now has both:
+
+- a strong local simulator foundation with SDK + CLI + docs + tests
+- a compiling Anchor workspace with first-pass `stablecoin-core` and `transfer-hook` programs
+
+The next major phase is transaction wiring, Anchor tests, and devnet proof.

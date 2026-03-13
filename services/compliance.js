@@ -1,6 +1,8 @@
 import {
   createChainClient,
-  createStore,
+  createOperationLedger,
+  persistRuntimeState,
+  requestIdFrom,
   readJsonBody,
   resolveRuntimeConfig,
   sendJson,
@@ -8,7 +10,7 @@ import {
 } from "./common.js";
 
 const SERVICE = "compliance";
-const actions = createStore("compliance-actions", []);
+const ledger = createOperationLedger(SERVICE);
 const runtime = resolveRuntimeConfig(SERVICE);
 
 async function health() {
@@ -17,58 +19,137 @@ async function health() {
     service: SERVICE,
     rpcUrl: runtime.rpcUrl,
     statePath: runtime.statePath,
-    actions: actions.read().length,
+    actions: ledger.requests.read().length,
+    failures: ledger.failures.read().length,
   };
-}
-
-async function record(entry) {
-  actions.update((items) => [...items, entry]);
-  return entry;
 }
 
 async function handleBlacklistAdd(req, res) {
   const body = await readJsonBody(req);
-  const client = await createChainClient(runtime);
-  const result = await client.compliance.blacklistAdd(body.address, body.reason ?? "unspecified");
-  const entry = await record({
-    id: `${Date.now()}-blacklist-add`,
+  const requestId = requestIdFrom(body, "blacklist-add");
+  const existing = ledger.find(requestId);
+  if (existing?.status === "succeeded") {
+    sendJson(res, 200, { ok: true, deduped: true, entry: existing });
+    return;
+  }
+  ledger.recordPending({
+    requestId,
     action: "blacklist_add",
     address: body.address,
     reason: body.reason ?? "unspecified",
-    signature: result.signature,
+    status: "pending",
     createdAt: new Date().toISOString(),
   });
-  sendJson(res, 200, { ok: true, entry, result });
+  const client = await createChainClient(runtime);
+  try {
+    const result = await client.compliance.blacklistAdd(body.address, body.reason ?? "unspecified");
+    persistRuntimeState(runtime, client);
+    const entry = ledger.recordSuccess(requestId, { signature: result.signature });
+    ledger.emit({
+      id: `${requestId}-event`,
+      service: SERVICE,
+      event: "blacklist.added",
+      requestId,
+      signature: result.signature,
+      createdAt: new Date().toISOString(),
+    });
+    sendJson(res, 200, { ok: true, entry, result });
+  } catch (error) {
+    const failure = ledger.recordFailure({
+      requestId,
+      action: "blacklist_add",
+      address: body.address,
+      error: error?.message ?? String(error),
+      failedAt: new Date().toISOString(),
+    });
+    sendJson(res, 500, { ok: false, failure });
+  }
 }
 
 async function handleBlacklistRemove(req, res) {
   const body = await readJsonBody(req);
-  const client = await createChainClient(runtime);
-  const result = await client.compliance.blacklistRemove(body.address);
-  const entry = await record({
-    id: `${Date.now()}-blacklist-remove`,
+  const requestId = requestIdFrom(body, "blacklist-remove");
+  const existing = ledger.find(requestId);
+  if (existing?.status === "succeeded") {
+    sendJson(res, 200, { ok: true, deduped: true, entry: existing });
+    return;
+  }
+  ledger.recordPending({
+    requestId,
     action: "blacklist_remove",
     address: body.address,
-    signature: result.signature,
+    status: "pending",
     createdAt: new Date().toISOString(),
   });
-  sendJson(res, 200, { ok: true, entry, result });
+  const client = await createChainClient(runtime);
+  try {
+    const result = await client.compliance.blacklistRemove(body.address);
+    persistRuntimeState(runtime, client);
+    const entry = ledger.recordSuccess(requestId, { signature: result.signature });
+    ledger.emit({
+      id: `${requestId}-event`,
+      service: SERVICE,
+      event: "blacklist.removed",
+      requestId,
+      signature: result.signature,
+      createdAt: new Date().toISOString(),
+    });
+    sendJson(res, 200, { ok: true, entry, result });
+  } catch (error) {
+    const failure = ledger.recordFailure({
+      requestId,
+      action: "blacklist_remove",
+      address: body.address,
+      error: error?.message ?? String(error),
+      failedAt: new Date().toISOString(),
+    });
+    sendJson(res, 500, { ok: false, failure });
+  }
 }
 
 async function handleSeize(req, res) {
   const body = await readJsonBody(req);
-  const client = await createChainClient(runtime);
-  const result = await client.compliance.seize(body.from, body.to, body.amount);
-  const entry = await record({
-    id: `${Date.now()}-seize`,
+  const requestId = requestIdFrom(body, "seize");
+  const existing = ledger.find(requestId);
+  if (existing?.status === "succeeded") {
+    sendJson(res, 200, { ok: true, deduped: true, entry: existing });
+    return;
+  }
+  ledger.recordPending({
+    requestId,
     action: "seize",
     from: body.from,
     to: body.to,
     amount: String(body.amount),
-    signature: result.signature,
+    status: "pending",
     createdAt: new Date().toISOString(),
   });
-  sendJson(res, 200, { ok: true, entry, result });
+  const client = await createChainClient(runtime);
+  try {
+    const result = await client.compliance.seize(body.from, body.to, body.amount);
+    persistRuntimeState(runtime, client);
+    const entry = ledger.recordSuccess(requestId, { signature: result.signature });
+    ledger.emit({
+      id: `${requestId}-event`,
+      service: SERVICE,
+      event: "seize.succeeded",
+      requestId,
+      signature: result.signature,
+      createdAt: new Date().toISOString(),
+    });
+    sendJson(res, 200, { ok: true, entry, result });
+  } catch (error) {
+    const failure = ledger.recordFailure({
+      requestId,
+      action: "seize",
+      from: body.from,
+      to: body.to,
+      amount: String(body.amount),
+      error: error?.message ?? String(error),
+      failedAt: new Date().toISOString(),
+    });
+    sendJson(res, 500, { ok: false, failure });
+  }
 }
 
 async function handleBlacklisted(_req, res) {
@@ -77,7 +158,11 @@ async function handleBlacklisted(_req, res) {
 }
 
 async function handleAudit(_req, res) {
-  sendJson(res, 200, { ok: true, items: actions.read() });
+  sendJson(res, 200, {
+    ok: true,
+    items: ledger.requests.read(),
+    failures: ledger.failures.read(),
+  });
 }
 
 await startService(

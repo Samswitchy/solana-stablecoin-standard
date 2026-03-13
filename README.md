@@ -74,11 +74,13 @@ This revision now includes:
 - A chain-enabled CLI that persists deployment metadata and executes RPC-backed operator commands
 - Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader commands
 - Validator-backed integration tests for SSS-1 and SSS-2 via `npm run test:integration`
-- A Dockerized backend service skeleton for mint/burn, compliance, indexing, and webhooks
+- A Dockerized backend service stack with persistent request tracking, failure ledgers, and a shared outbox for mint/burn, compliance, indexing, and webhooks
 - A polished example frontend for preset-driven creation, live service actions, and state inspection
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
+- Recorded devnet proof for deploy, init, minter quota, mint, blacklist, blocked transfer, and seize in `DEVNET_PROOF.md`
+- A public-devnet-safe `holders` / `status` fallback that derives holder state from known operators, blacklist state, and recent on-chain activity when RPC secondary indexes are unavailable
 
-Current remaining gaps: funded devnet deployment evidence and expanding the backend skeleton into full production workflows.
+Current remaining gaps: final submission polish, demo assets, and optional deeper backend integrations like external screening persistence.
 
 ## Backend Services
 

@@ -87,6 +87,6 @@ Optional manual steps:
 
 ## Notes
 
-- Public `api.devnet.solana.com` does not expose the Token-2022 secondary index needed by the generic `holders` / `status` implementation, so final verification used direct mint and associated-token-account reads instead.
+- Public `api.devnet.solana.com` does not expose the Token-2022 secondary index, but the current SDK/CLI recover `holders` and `status` through known-holder and recent-activity fallbacks.
 - The currently active binaries are the upgraded deploys signed by `3ZUFPM...` and `4Rp36D...`; the earlier raw deploys were superseded after aligning `declare_id!` values with the final program IDs.
 - Blocked transfer behavior is proven by the `SourceBlacklisted` simulation error from the transfer-hook program before signature submission.

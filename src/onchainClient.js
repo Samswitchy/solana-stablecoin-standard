@@ -146,8 +146,17 @@ function buildConfig(options, authority) {
   return merged;
 }
 
+function normalizeHolderList(values = []) {
+  return [...new Set(values.filter(Boolean).map((value) => toPublicKey(value, "holder").toBase58()))].sort();
+}
+
+function isUnsupportedIndexError(error) {
+  const message = error?.message ?? String(error ?? "");
+  return message.includes("excluded from account secondary indexes");
+}
+
 export class OnchainSolanaStablecoin {
-  constructor({ connection, authority, config, addresses, provider, programs, rpcUrl }) {
+  constructor({ connection, authority, config, addresses, provider, programs, rpcUrl, knownHolders = [] }) {
     this.connection = connection;
     this.authority = authority;
     this.config = config;
@@ -155,6 +164,17 @@ export class OnchainSolanaStablecoin {
     this.provider = provider;
     this.programs = programs;
     this.rpcUrl = rpcUrl;
+    this.knownHolders = new Set(normalizeHolderList([
+      authority?.publicKey,
+      config?.authority,
+      ...knownHolders,
+    ]));
+  }
+
+  observeHolders(...holders) {
+    for (const holder of normalizeHolderList(holders)) {
+      this.knownHolders.add(holder);
+    }
   }
 
   static async create(connection, options) {
@@ -371,6 +391,7 @@ export class OnchainSolanaStablecoin {
         transferHookProgramId,
       },
       rpcUrl,
+      knownHolders: [authority.publicKey],
     });
   }
 
@@ -415,6 +436,7 @@ export class OnchainSolanaStablecoin {
         transferHookProgramId,
       },
       rpcUrl,
+      knownHolders: options.knownHolders ?? options.config?.knownHolders ?? [],
     });
   }
 
@@ -431,6 +453,7 @@ export class OnchainSolanaStablecoin {
         transferHook: this.programs.transferHookProgramId.toBase58(),
       },
       config: this.config,
+      knownHolders: [...this.knownHolders].sort(),
     };
   }
 
@@ -464,6 +487,7 @@ export class OnchainSolanaStablecoin {
   async mint({ recipient, amount, minter }) {
     const signer = toSigner(minter, this.authority);
     const owner = toPublicKey(recipient, "recipient");
+    this.observeHolders(owner);
     const destination = await getOrCreateAssociatedTokenAccount(
       this.connection,
       this.authority,
@@ -498,6 +522,7 @@ export class OnchainSolanaStablecoin {
     const burnerSigner = toSigner(burner, this.authority);
     const holderSigner = toSigner(holderAuthority, burnerSigner);
     const owner = toPublicKey(holder, "holder");
+    this.observeHolders(owner);
     const source = getAssociatedTokenAddressSync(this.addresses.mint, owner, true, TOKEN_2022_PROGRAM_ID);
     const signature = await this.programs.stablecoin.methods
       .burn(amountToBn(amount))
@@ -524,6 +549,7 @@ export class OnchainSolanaStablecoin {
     const ownerSigner = toSigner(owner, this.authority);
     const fromOwner = toPublicKey(from, "from owner");
     const toOwner = toPublicKey(to, "to owner");
+    this.observeHolders(fromOwner, toOwner);
     const source = getAssociatedTokenAddressSync(this.addresses.mint, fromOwner, true, TOKEN_2022_PROGRAM_ID);
     const destination = getAssociatedTokenAddressSync(this.addresses.mint, toOwner, true, TOKEN_2022_PROGRAM_ID);
     const ensureAtaTx = new Transaction().add(
@@ -574,6 +600,7 @@ export class OnchainSolanaStablecoin {
   async freezeAccount({ address, authority }) {
     const signer = toSigner(authority, this.authority);
     const owner = toPublicKey(address, "freeze target");
+    this.observeHolders(owner);
     const tokenAccount = getAssociatedTokenAddressSync(
       this.addresses.mint,
       owner,
@@ -597,6 +624,7 @@ export class OnchainSolanaStablecoin {
   async thawAccount({ address, authority }) {
     const signer = toSigner(authority, this.authority);
     const owner = toPublicKey(address, "thaw target");
+    this.observeHolders(owner);
     const tokenAccount = getAssociatedTokenAddressSync(
       this.addresses.mint,
       owner,
@@ -646,6 +674,7 @@ export class OnchainSolanaStablecoin {
   async setMinterQuota(minter, quota, authority) {
     const signer = toSigner(authority, this.authority);
     const minterKey = toPublicKey(minter, "minter");
+    this.observeHolders(minterKey);
     const [minterQuota] = deriveMinterQuotaPda(
       this.addresses.config,
       minterKey,
@@ -710,23 +739,76 @@ export class OnchainSolanaStablecoin {
     }));
   }
 
+  async deriveKnownHoldersFromRecentActivity(limit = 25) {
+    const signatures = await this.connection.getSignaturesForAddress(this.addresses.config, { limit });
+    const holders = new Set();
+    for (const entry of signatures) {
+      const tx = await this.connection.getTransaction(entry.signature, { maxSupportedTransactionVersion: 0 });
+      const balances = [...(tx?.meta?.preTokenBalances ?? []), ...(tx?.meta?.postTokenBalances ?? [])];
+      for (const balance of balances) {
+        if (balance.mint === this.addresses.mint.toBase58() && balance.owner) {
+          holders.add(balance.owner);
+        }
+      }
+    }
+    const normalized = [...holders].sort();
+    this.observeHolders(...normalized);
+    return normalized;
+  }
+
   async listHolders(minBalance = 0) {
     const min = BigInt(minBalance);
-    const accounts = await this.connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
-      filters: [{ memcmp: { offset: 0, bytes: this.addresses.mint.toBase58() } }],
-    });
-    return accounts
-      .map(({ pubkey, account }) => {
-        const parsed = unpackAccount(pubkey, account, TOKEN_2022_PROGRAM_ID);
-        return {
-          tokenAccount: pubkey.toBase58(),
-          holder: parsed.owner.toBase58(),
-          balance: parsed.amount.toString(),
-          isFrozen: parsed.isFrozen,
-        };
-      })
-      .filter((holder) => BigInt(holder.balance) >= min)
-      .sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
+    try {
+      const accounts = await this.connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
+        filters: [{ memcmp: { offset: 0, bytes: this.addresses.mint.toBase58() } }],
+      });
+      const holders = accounts
+        .map(({ pubkey, account }) => {
+          const parsed = unpackAccount(pubkey, account, TOKEN_2022_PROGRAM_ID);
+          return {
+            tokenAccount: pubkey.toBase58(),
+            holder: parsed.owner.toBase58(),
+            balance: parsed.amount.toString(),
+            isFrozen: parsed.isFrozen,
+          };
+        })
+        .filter((holder) => BigInt(holder.balance) >= min)
+        .sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
+      this.observeHolders(...holders.map((holder) => holder.holder));
+      return holders;
+    } catch (error) {
+      if (!isUnsupportedIndexError(error)) throw error;
+      const blacklisted = await this.listBlacklisted();
+      this.observeHolders(...blacklisted.map((entry) => entry.wallet));
+      await this.deriveKnownHoldersFromRecentActivity();
+      const holders = [];
+      for (const holder of this.knownHolders) {
+        const owner = toPublicKey(holder, "holder");
+        const tokenAccount = getAssociatedTokenAddressSync(
+          this.addresses.mint,
+          owner,
+          true,
+          TOKEN_2022_PROGRAM_ID
+        );
+        try {
+          const account = await getAccount(this.connection, tokenAccount, "confirmed", TOKEN_2022_PROGRAM_ID);
+          holders.push({
+            tokenAccount: tokenAccount.toBase58(),
+            holder: owner.toBase58(),
+            balance: account.amount.toString(),
+            isFrozen: account.isFrozen,
+          });
+        } catch (accountError) {
+          const message = accountError?.message ?? String(accountError ?? "");
+          if (!message.includes("Failed to find account") && !message.includes("could not find account")) {
+            throw accountError;
+          }
+        }
+      }
+      return holders
+        .filter((holder) => BigInt(holder.balance) >= min)
+        .sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
+    }
   }
 
   async getAuditLog(action) {
@@ -758,6 +840,7 @@ export class OnchainSolanaStablecoin {
       blacklistAdd: async (address, reason = "unspecified", authority) => {
         const signer = toSigner(authority, this.authority);
         const wallet = toPublicKey(address, "blacklist wallet");
+        this.observeHolders(wallet);
         const [blacklistEntry] = deriveBlacklistPda(
           this.addresses.config,
           wallet,
@@ -801,6 +884,7 @@ export class OnchainSolanaStablecoin {
       blacklistRemove: async (address, authority) => {
         const signer = toSigner(authority, this.authority);
         const wallet = toPublicKey(address, "blacklist wallet");
+        this.observeHolders(wallet);
         const [blacklistEntry] = deriveBlacklistPda(
           this.addresses.config,
           wallet,
@@ -841,6 +925,7 @@ export class OnchainSolanaStablecoin {
         const signer = toSigner(authority, this.authority);
         const fromOwner = toPublicKey(from, "seize source owner");
         const toOwner = toPublicKey(to, "seize destination owner");
+        this.observeHolders(fromOwner, toOwner);
         const source = getAssociatedTokenAddressSync(
           this.addresses.mint,
           fromOwner,

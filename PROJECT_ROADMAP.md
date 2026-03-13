@@ -77,10 +77,10 @@ This roadmap tracks what is already done and what remains to reach a production-
 
 ## 8) Backend Services and Deployment Ops
 
-- ✅ Implement mint/burn orchestration service skeleton
-- ✅ Implement event listener/indexer skeleton
-- ✅ Implement compliance service for SSS-2 workflows
-- ✅ Implement webhook service with retries and failure handling
+- ✅ Implement mint/burn orchestration service with persistent request tracking and idempotent request keys
+- ✅ Implement event listener/indexer with persisted snapshots and poll ledger
+- ✅ Implement compliance service for SSS-2 workflows with durable request/failure logs
+- ✅ Implement webhook service with retries, persisted deliveries, and shared outbox support
 - ✅ Add Dockerfiles and docker-compose setup
 - ✅ Add health checks and structured logging
 
@@ -114,7 +114,7 @@ The project now has both:
 - deployed and locally verified `stablecoin-core` and `transfer-hook` programs
 - a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader flows
 - validator-backed integration tests for both SSS-1 and SSS-2 happy paths
-- a Dockerized backend service skeleton covering mint/burn, compliance, indexer, and webhook flows
+- a Dockerized backend operator stack with persistent request/failure ledgers and service outbox tracking
 - a polished example frontend that demonstrates issuance and operator workflows
 - recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
 - recorded devnet program IDs, deploy signatures, init/mint/blacklist/seize signatures, and final balances in `DEVNET_PROOF.md`
@@ -123,7 +123,7 @@ The project now has both:
 
 - Finalize the judge-facing docs pass now that devnet proof is recorded.
 - Prepare the PR summary, demo script, and X post using the real devnet proof data.
-- Decide whether to spend any remaining time on an admin TUI or on deeper backend persistence/polish.
+- Decide whether to spend any remaining time on an admin TUI or on deeper third-party screening integrations.
 
 ## Final Sprint Checklist
 
@@ -138,5 +138,5 @@ The project now has both:
 
 ## Current Blockers
 
-- Public `api.devnet.solana.com` does not support the Token-2022 secondary index required by the generic `holders` and `status` implementations, so proof capture currently uses direct mint + ATA reads on devnet.
-- The backend services are still an operator-grade skeleton and could score higher with deeper persistence and third-party screening integration if time remains.
+- Public `api.devnet.solana.com` still does not support the Token-2022 secondary index, but the SDK/CLI now recover `holders` and `status` through known-holder and recent-activity fallbacks.
+- The backend now has durable local persistence; the remaining upside is third-party screening integration and richer operational policy automation.

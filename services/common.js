@@ -44,6 +44,18 @@ export function writeJsonFile(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+export function reloadRuntimeState(runtime) {
+  runtime.state = readJsonFile(runtime.statePath, runtime.state ?? null);
+  return runtime.state;
+}
+
+export function persistRuntimeState(runtime, client) {
+  const nextState = client.serialize();
+  writeJsonFile(runtime.statePath, nextState);
+  runtime.state = nextState;
+  return nextState;
+}
+
 export function createStore(name, initialValue) {
   const filePath = path.join(ensureDir(), `${name}.json`);
   return {
@@ -61,6 +73,48 @@ export function createStore(name, initialValue) {
       return this.write(next);
     },
   };
+}
+
+export function createOperationLedger(name) {
+  const requests = createStore(`${name}-requests`, []);
+  const failures = createStore(`${name}-failures`, []);
+  const outbox = createStore("service-outbox", []);
+
+  return {
+    requests,
+    failures,
+    outbox,
+    find(requestId) {
+      return requests.read().find((item) => item.requestId === requestId) ?? null;
+    },
+    recordPending(entry) {
+      requests.update((items) => [...items.filter((item) => item.requestId !== entry.requestId), entry]);
+      return entry;
+    },
+    recordSuccess(requestId, patch) {
+      let finalEntry = null;
+      requests.update((items) =>
+        items.map((item) => {
+          if (item.requestId !== requestId) return item;
+          finalEntry = { ...item, ...patch, status: "succeeded", updatedAt: new Date().toISOString() };
+          return finalEntry;
+        })
+      );
+      return finalEntry;
+    },
+    recordFailure(entry) {
+      failures.update((items) => [...items, entry]);
+      return entry;
+    },
+    emit(event) {
+      outbox.update((items) => [...items, event]);
+      return event;
+    },
+  };
+}
+
+export function requestIdFrom(body, prefix) {
+  return body?.requestId ?? `${prefix}-${Date.now()}`;
 }
 
 export async function readJsonBody(req) {
@@ -145,6 +199,7 @@ export function resolveRuntimeConfig(service) {
 }
 
 export async function createChainClient(runtime) {
+  reloadRuntimeState(runtime);
   if (!runtime.state) {
     throw new Error(`Missing deployment state file at ${runtime.statePath}`);
   }

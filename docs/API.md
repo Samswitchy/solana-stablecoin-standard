@@ -45,6 +45,7 @@
 
 All CLI commands accept `--state <path>` to read/write an isolated state snapshot.
 Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing chain deployment state file is present.
+Chain state snapshots now also persist known holder addresses so `holders` and `status` can fall back cleanly on public RPCs that do not expose Token-2022 secondary indexes.
 
 - `sss-token init --preset sss-1|sss-2`
 - `sss-token init --custom <config.json|config.toml>`
@@ -72,23 +73,29 @@ Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing 
 
 - `GET /health`
 - `GET /requests`
-- `POST /mint` with `{ "recipient": "...", "amount": 1000 }`
-- `POST /burn` with `{ "holder": "...", "amount": 1000 }`
+- `POST /mint` with `{ "recipient": "...", "amount": 1000, "requestId": "optional-idempotency-key" }`
+- `POST /burn` with `{ "holder": "...", "amount": 1000, "requestId": "optional-idempotency-key" }`
+
+Responses persist request status and dedupe repeated `requestId` submissions.
 
 ### `compliance`
 
 - `GET /health`
 - `GET /blacklist`
 - `GET /audit`
-- `POST /blacklist/add` with `{ "address": "...", "reason": "watchlist" }`
-- `POST /blacklist/remove` with `{ "address": "..." }`
-- `POST /seize` with `{ "from": "...", "to": "...", "amount": 1000 }`
+- `POST /blacklist/add` with `{ "address": "...", "reason": "watchlist", "requestId": "optional-idempotency-key" }`
+- `POST /blacklist/remove` with `{ "address": "...", "requestId": "optional-idempotency-key" }`
+- `POST /seize` with `{ "from": "...", "to": "...", "amount": 1000, "requestId": "optional-idempotency-key" }`
+
+Compliance endpoints persist succeeded requests, retain failures, and emit outbox events for downstream delivery.
 
 ### `indexer`
 
 - `GET /health`
 - `GET /snapshot`
 - `POST /poll`
+
+Snapshots persist the latest status, holders, blacklist, and audit view, and poll runs are tracked in the shared service ledger.
 
 ### `webhook`
 
@@ -97,3 +104,5 @@ Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing 
 - `GET /deliveries`
 - `POST /subscriptions` with `{ "url": "https://...", "events": ["indexer.snapshot.updated"] }`
 - `POST /dispatch` with `{ "event": "indexer.snapshot.updated", "payload": {...} }`
+
+Webhook deliveries are persisted with retry results for later operator inspection.

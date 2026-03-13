@@ -188,8 +188,10 @@ async function chainClientFromState(args, statePath) {
     mint: state.mint,
     configAddress: state.configAddress,
     hookConfig: state.hookConfig,
+    hookExtraAccountMetaList: state.hookExtraAccountMetaList,
     config: state.config,
     programIds: programIdsFromArgs(args, state) ?? state.programIds,
+    knownHolders: state.knownHolders ?? [],
   });
 }
 
@@ -251,42 +253,59 @@ if (cmd === "init") {
 
 if (useChain) {
   const client = await chainClientFromState(args, statePath);
+  const persistChainState = () => saveState(client.serialize(), statePath);
 
   if (cmd === "mint") {
     const [recipient, amount] = args.slice(1);
-    console.log(JSON.stringify(await client.mint({ recipient, amount }), null, 2));
+    const result = await client.mint({ recipient, amount });
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "burn") {
     const [holder, amount] = args.slice(1);
-    console.log(JSON.stringify(await client.burn({ holder, amount }), null, 2));
+    const result = await client.burn({ holder, amount });
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "transfer") {
     const [from, to, amount] = args.slice(1);
-    console.log(JSON.stringify(await client.transfer({ from, to, amount }), null, 2));
+    const result = await client.transfer({ from, to, amount });
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "freeze") {
     const [address] = args.slice(1);
-    console.log(JSON.stringify(await client.freezeAccount({ address }), null, 2));
+    const result = await client.freezeAccount({ address });
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "thaw") {
     const [address] = args.slice(1);
-    console.log(JSON.stringify(await client.thawAccount({ address }), null, 2));
+    const result = await client.thawAccount({ address });
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "pause") {
-    console.log(JSON.stringify(await client.pause({}), null, 2));
+    const result = await client.pause({});
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "unpause") {
-    console.log(JSON.stringify(await client.unpause({}), null, 2));
+    const result = await client.unpause({});
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "status") {
-    console.log(JSON.stringify(await client.status(), null, 2));
+    const result = await client.status();
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "supply") {
@@ -297,12 +316,16 @@ if (useChain) {
     const action = args[1];
     if (action === "add") {
       const [minter, quota] = args.slice(2);
-      console.log(JSON.stringify(await client.setMinterQuota(minter, quota), null, 2));
+      const result = await client.setMinterQuota(minter, quota);
+      persistChainState();
+      console.log(JSON.stringify(result, null, 2));
       process.exit(0);
     }
     if (action === "remove") {
       const minter = args[2];
-      console.log(JSON.stringify(await client.removeMinterQuota(minter), null, 2));
+      const result = await client.removeMinterQuota(minter);
+      persistChainState();
+      console.log(JSON.stringify(result, null, 2));
       process.exit(0);
     }
     if (action === "list") {
@@ -312,7 +335,9 @@ if (useChain) {
   }
   if (cmd === "holders") {
     const minBalance = arg("--min-balance", args) ?? "0";
-    console.log(JSON.stringify(await client.listHolders(minBalance), null, 2));
+    const result = await client.listHolders(minBalance);
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
   if (cmd === "audit-log") {
@@ -325,11 +350,15 @@ if (useChain) {
     const address = args[2];
     if (action === "add") {
       const reason = arg("--reason", args) ?? "unspecified";
-      console.log(JSON.stringify(await client.compliance.blacklistAdd(address, reason), null, 2));
+      const result = await client.compliance.blacklistAdd(address, reason);
+      persistChainState();
+      console.log(JSON.stringify(result, null, 2));
       process.exit(0);
     }
     if (action === "remove") {
-      console.log(JSON.stringify(await client.compliance.blacklistRemove(address), null, 2));
+      const result = await client.compliance.blacklistRemove(address);
+      persistChainState();
+      console.log(JSON.stringify(result, null, 2));
       process.exit(0);
     }
   }
@@ -337,7 +366,9 @@ if (useChain) {
     const from = args[1];
     const to = arg("--to", args);
     const amount = arg("--amount", args);
-    console.log(JSON.stringify(await client.compliance.seize(from, to, amount), null, 2));
+    const result = await client.compliance.seize(from, to, amount);
+    persistChainState();
+    console.log(JSON.stringify(result, null, 2));
     process.exit(0);
   }
 } else {

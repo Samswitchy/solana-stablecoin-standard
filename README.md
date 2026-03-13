@@ -20,6 +20,7 @@ npm install
 npm test
 npm run test:integration
 npm run frontend:serve
+npm run tui:admin -- --state /tmp/sss-devnet-proof.json --keypair ~/.config/solana/sss-devnet.json --rpc-url https://api.devnet.solana.com
 ./bin/sss-token.js init --preset sss-2
 ./bin/sss-token.js minters add desk-1 1000000
 ./bin/sss-token.js mint alice 500000
@@ -61,6 +62,7 @@ Custom state path:
 - `src/` SDK surface and preset logic
 - `bin/` `sss-token` admin CLI entrypoint
 - `examples/frontend/` static operator-facing demo UI
+- `scripts/admin-tui.js` terminal operator dashboard
 - `test/` presets + SDK + CLI integration tests
 - `docs/` architecture, standards, operations, compliance, and API docs
 
@@ -76,6 +78,7 @@ This revision now includes:
 - Validator-backed integration tests for SSS-1 and SSS-2 via `npm run test:integration`
 - A Dockerized backend service stack with persistent request tracking, failure ledgers, and a shared outbox for mint/burn, compliance, indexing, and webhooks
 - A polished example frontend for preset-driven creation, live service actions, and state inspection
+- An interactive admin TUI for terminal-native monitoring and operations over a deployed chain state file
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 - Recorded devnet proof for deploy, init, minter quota, mint, blacklist, blocked transfer, and seize in `DEVNET_PROOF.md`
 - A public-devnet-safe `holders` / `status` fallback that derives holder state from known operators, blacklist state, and recent on-chain activity when RPC secondary indexes are unavailable
@@ -105,6 +108,27 @@ npm run frontend:serve
 ```
 
 Then open `http://127.0.0.1:4173`.
+
+To make the frontend drive live service actions, start the backend stack too:
+
+```bash
+docker compose up --build
+```
+
+Use the admin TUI with a chain deployment state file:
+
+```bash
+npm run tui:admin -- --state ./.sss-devnet.json --keypair ~/.config/solana/sss-devnet.json --rpc-url https://api.devnet.solana.com
+```
+
+The TUI supports:
+
+- live dashboard refresh
+- mint
+- burn
+- pause / unpause
+- blacklist add / remove
+- seize
 
 For a scripted devnet attempt, use:
 

@@ -13,6 +13,7 @@
     "build:anchor": "anchor build",
     "lint": "node --check src/*.js test/*.js services/*.js scripts/*.js bin/*.js examples/frontend/*.js",
     "frontend:serve": "node scripts/frontend-preview.js",
+    "tui:admin": "node scripts/admin-tui.js",
     "service:mint-burn": "node services/mint-burn.js",
     "service:compliance": "node services/compliance.js",
     "service:indexer": "node services/indexer.js",

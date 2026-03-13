@@ -27,3 +27,5 @@ Then open:
 ```text
 http://127.0.0.1:4173
 ```
+
+The main project [README.md](/Users/user/Documents/Project%20X/Superteam%20Bounty/solana-stablecoin-standard/README.md) also includes these frontend steps in the quick-start and operator sections.

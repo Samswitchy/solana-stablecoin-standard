@@ -90,7 +90,7 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Connect the frontend to the backend service stack over HTTP
 - ✅ Add preset-driven SDK and CLI snippet generation in the frontend
 - ✅ Add live status, holders, blacklist, and audit views in the frontend
-- ⬜ Add an interactive admin TUI
+- ✅ Add an interactive admin TUI
 - ⬜ Add SSS-3 private stablecoin proof of concept
 - ⬜ Add oracle module for non-USD peg workflows
 
@@ -116,6 +116,7 @@ The project now has both:
 - validator-backed integration tests for both SSS-1 and SSS-2 happy paths
 - a Dockerized backend operator stack with persistent request/failure ledgers and service outbox tracking
 - a polished example frontend that demonstrates issuance and operator workflows
+- an interactive admin TUI for live terminal-native monitoring and operations
 - recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
 - recorded devnet program IDs, deploy signatures, init/mint/blacklist/seize signatures, and final balances in `DEVNET_PROOF.md`
 
@@ -123,7 +124,7 @@ The project now has both:
 
 - Finalize the judge-facing docs pass now that devnet proof is recorded.
 - Prepare the PR summary, demo script, and X post using the real devnet proof data.
-- Decide whether to spend any remaining time on an admin TUI or on deeper third-party screening integrations.
+- Decide whether to spend any remaining time on deeper third-party screening integrations.
 
 ## Final Sprint Checklist
 

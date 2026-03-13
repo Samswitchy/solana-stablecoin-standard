@@ -46,6 +46,7 @@
 All CLI commands accept `--state <path>` to read/write an isolated state snapshot.
 Chain-backed execution is enabled when `--rpc-url`, `--keypair`, or an existing chain deployment state file is present.
 Chain state snapshots now also persist known holder addresses so `holders` and `status` can fall back cleanly on public RPCs that do not expose Token-2022 secondary indexes.
+The admin TUI uses the same chain state snapshot and on-chain client.
 
 - `sss-token init --preset sss-1|sss-2`
 - `sss-token init --custom <config.json|config.toml>`
@@ -66,6 +67,7 @@ Chain state snapshots now also persist known holder addresses so `holders` and `
 - `sss-token blacklist add <address> --reason <reason>`
 - `sss-token blacklist remove <address>`
 - `sss-token seize <address> --to <treasury> --amount <amount>`
+- `npm run tui:admin -- --state <chain-state.json> --keypair <authority.json> --rpc-url <url>`
 
 ## Backend Services
 

@@ -96,3 +96,17 @@ Use it to:
 - generate preset-based SDK and CLI snippets
 - drive mint, burn, blacklist, and seize actions through the backend services
 - inspect live status, holder balances, blacklist state, and audit activity
+
+## Admin TUI
+
+Start the terminal operator dashboard with:
+
+```bash
+npm run tui:admin -- --state ./.sss-devnet.json --keypair ~/.config/solana/sss-devnet.json --rpc-url https://api.devnet.solana.com
+```
+
+Use it to:
+
+- monitor live token status in the terminal
+- inspect holders, blacklist state, and recent audit signatures
+- execute mint, burn, pause/unpause, blacklist, and seize actions

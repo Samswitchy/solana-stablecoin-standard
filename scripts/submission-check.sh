@@ -37,6 +37,7 @@ check_file "SUBMISSION_CHECKLIST.md"
 check_file "docker-compose.yml"
 check_file "scripts/localnet-smoke.sh"
 check_file "scripts/devnet-deploy.sh"
+check_file "scripts/admin-tui.js"
 check_file "examples/frontend/index.html"
 check_file "examples/frontend/app.js"
 check_file "examples/frontend/styles.css"
@@ -64,6 +65,7 @@ echo "Checking package scripts..."
 check_text "package.json" "\"test:integration\"" "package.json includes integration test script"
 check_text "package.json" "\"service:mint-burn\"" "package.json includes service scripts"
 check_text "package.json" "\"frontend:serve\"" "package.json includes frontend preview script"
+check_text "package.json" "\"tui:admin\"" "package.json includes admin TUI script"
 
 echo
 if [[ "$missing" -eq 0 ]]; then

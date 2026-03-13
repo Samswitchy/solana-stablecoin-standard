@@ -7,6 +7,7 @@
 - [ ] `LOCALNET_PROOF.md` contains the latest localnet proof
 - [ ] `DEVNET_PROOF.md` is filled with real program IDs and signatures
 - [ ] `docker-compose.yml` starts the backend service stack
+- [ ] `npm run frontend:serve` starts the example frontend
 - [ ] `npm test` passes
 - [ ] `npm run test:integration` passes
 - [ ] `cargo test --offline` passes
@@ -28,6 +29,7 @@
   - [ ] admin seize flow
   - [ ] validator-backed integration tests
   - [ ] backend service stack
+  - [ ] example frontend demo
 - [ ] devnet Program IDs are included in the PR
 - [ ] example devnet transaction signatures are included in the PR
 - [ ] demo video is recorded

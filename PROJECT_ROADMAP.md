@@ -84,7 +84,17 @@ This roadmap tracks what is already done and what remains to reach a production-
 - ✅ Add Dockerfiles and docker-compose setup
 - ✅ Add health checks and structured logging
 
-## 9) Devnet Proof and Submission Assets
+## 9) Bonus Feature Delivery
+
+- ✅ Add a polished example frontend bonus feature
+- ✅ Connect the frontend to the backend service stack over HTTP
+- ✅ Add preset-driven SDK and CLI snippet generation in the frontend
+- ✅ Add live status, holders, blacklist, and audit views in the frontend
+- ⬜ Add an interactive admin TUI
+- ⬜ Add SSS-3 private stablecoin proof of concept
+- ⬜ Add oracle module for non-USD peg workflows
+
+## 10) Devnet Proof and Submission Assets
 
 - 🟡 Deploy program(s) to devnet and record Program IDs
 - 🟡 Capture example transaction signatures for required flows
@@ -104,12 +114,14 @@ The project now has both:
 - a chain-enabled SDK and CLI verified against localnet for initialize, minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader flows
 - validator-backed integration tests for both SSS-1 and SSS-2 happy paths
 - a Dockerized backend service skeleton covering mint/burn, compliance, indexer, and webhook flows
+- a polished example frontend that demonstrates issuance and operator workflows
 - recorded localnet deployment and transaction signatures in `LOCALNET_PROOF.md`
 
 ## Immediate Next Steps
 
 - Run the same proof flow on devnet and record final Program IDs and transaction signatures.
 - Extend the backend skeleton into fuller production workflows and external screening integrations.
+- Decide whether to spend remaining time on an admin TUI or keep focus on devnet proof and final submission polish.
 
 ## Final Sprint Checklist
 

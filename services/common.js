@@ -7,6 +7,7 @@ import { OnchainSolanaStablecoin, loadKeypairFromFile } from "../src/index.js";
 const DATA_DIR = process.env.SSS_SERVICE_DATA_DIR ?? path.resolve(".services-data");
 const DEFAULT_STATE_PATH = process.env.SSS_STATE_PATH ?? path.resolve(".sss-chain.json");
 const DEFAULT_KEYPAIR_PATH = expandHome(process.env.SSS_KEYPAIR ?? "~/.config/solana/id.json");
+const DEFAULT_CORS_ORIGIN = process.env.SSS_CORS_ORIGIN ?? "*";
 
 export function expandHome(value) {
   if (!value) return value;
@@ -71,8 +72,22 @@ export async function readJsonBody(req) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
+export function defaultHeaders(extra = {}) {
+  return {
+    "access-control-allow-origin": DEFAULT_CORS_ORIGIN,
+    "access-control-allow-methods": "GET,POST,OPTIONS",
+    "access-control-allow-headers": "content-type",
+    ...extra,
+  };
+}
+
 export function sendJson(res, statusCode, payload) {
-  res.writeHead(statusCode, { "content-type": "application/json" });
+  res.writeHead(
+    statusCode,
+    defaultHeaders({
+      "content-type": "application/json",
+    })
+  );
   res.end(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
@@ -96,6 +111,11 @@ export function asyncHandler(service, fn) {
 
 export function createRouter(service, routes, healthFactory) {
   return asyncHandler(service, async (req, res) => {
+    if (req.method?.toUpperCase() === "OPTIONS") {
+      res.writeHead(204, defaultHeaders());
+      res.end();
+      return;
+    }
     const url = new URL(req.url, "http://localhost");
     const key = `${req.method.toUpperCase()} ${url.pathname}`;
     if (key === "GET /health") {

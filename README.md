@@ -19,6 +19,7 @@ I attempted to clone the suggested reference repository (`Samswitchy/solana-vaul
 npm install
 npm test
 npm run test:integration
+npm run frontend:serve
 ./bin/sss-token.js init --preset sss-2
 ./bin/sss-token.js minters add desk-1 1000000
 ./bin/sss-token.js mint alice 500000
@@ -59,6 +60,7 @@ Custom state path:
 - `programs/` Anchor on-chain programs (`stablecoin-core`, `transfer-hook`)
 - `src/` SDK surface and preset logic
 - `bin/` `sss-token` admin CLI entrypoint
+- `examples/frontend/` static operator-facing demo UI
 - `test/` presets + SDK + CLI integration tests
 - `docs/` architecture, standards, operations, compliance, and API docs
 
@@ -73,6 +75,7 @@ This revision now includes:
 - Localnet-verified SSS-2 flow for initialize, set minter quota, mint, blacklist, blocked transfer enforcement, seize, status, and reader commands
 - Validator-backed integration tests for SSS-1 and SSS-2 via `npm run test:integration`
 - A Dockerized backend service skeleton for mint/burn, compliance, indexing, and webhooks
+- A polished example frontend for preset-driven creation, live service actions, and state inspection
 - Passing Rust unit tests for core role/compliance guards via `cargo test --offline`
 
 Current remaining gaps: funded devnet deployment evidence and expanding the backend skeleton into full production workflows.
@@ -92,6 +95,14 @@ Run the stack with:
 ```bash
 docker compose up --build
 ```
+
+Run the example frontend with:
+
+```bash
+npm run frontend:serve
+```
+
+Then open `http://127.0.0.1:4173`.
 
 For a scripted devnet attempt, use:
 

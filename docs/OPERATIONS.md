@@ -76,3 +76,23 @@ Default service ports:
 - `compliance`: `8082`
 - `indexer`: `8083`
 - `webhook`: `8084`
+
+## Example Frontend
+
+Start the static preview UI with:
+
+```bash
+npm run frontend:serve
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4173
+```
+
+Use it to:
+
+- generate preset-based SDK and CLI snippets
+- drive mint, burn, blacklist, and seize actions through the backend services
+- inspect live status, holder balances, blacklist state, and audit activity

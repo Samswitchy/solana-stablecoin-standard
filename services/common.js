@@ -188,6 +188,8 @@ export function createRouter(service, routes, healthFactory) {
 export function resolveRuntimeConfig(service) {
   const statePath = DEFAULT_STATE_PATH;
   const state = readJsonFile(statePath, null);
+  const authorityPubkey =
+    fs.existsSync(DEFAULT_KEYPAIR_PATH) ? loadKeypairFromFile(DEFAULT_KEYPAIR_PATH).publicKey.toBase58() : null;
   return {
     service,
     port: Number(process.env.PORT ?? 8080),
@@ -195,6 +197,7 @@ export function resolveRuntimeConfig(service) {
     keypairPath: DEFAULT_KEYPAIR_PATH,
     rpcUrl: process.env.SSS_RPC_URL ?? state?.rpcUrl ?? "http://127.0.0.1:8899",
     state,
+    authorityPubkey,
   };
 }
 

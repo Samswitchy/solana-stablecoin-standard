@@ -124,6 +124,14 @@
               <input id="indexerUrl" value="http://127.0.0.1:8083" />
             </label>
           </div>
+          <div class="callout">
+            <strong>Operator authority</strong>
+            <span id="operatorAuthority">Not detected yet. Refresh live data to load the backend signer wallet.</span>
+          </div>
+          <div class="callout">
+            <strong>Amount format</strong>
+            <span>Use whole base units only, for example <code>50000</code>, not decimal values like <code>0.1</code>.</span>
+          </div>
           <div class="action-grid">
             <form class="action-card" data-action="mint">
               <h3>Mint</h3>
@@ -133,6 +141,10 @@
             </form>
             <form class="action-card" data-action="burn">
               <h3>Burn</h3>
+              <div class="action-warning" role="note">
+                <strong>Burn requirements</strong>
+                <span>Burn currently expects the backend signer wallet to own the holder account.</span>
+              </div>
               <input name="holder" placeholder="Holder" />
               <input name="amount" placeholder="Amount" />
               <button class="button button-primary" type="submit">Run Burn</button>

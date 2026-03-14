@@ -39,6 +39,7 @@ const holdersList = document.querySelector("#holdersList");
 const blacklistList = document.querySelector("#blacklistList");
 const auditList = document.querySelector("#auditList");
 const servicesState = document.querySelector("#servicesState");
+const operatorAuthority = document.querySelector("#operatorAuthority");
 
 function currentConfig() {
   const data = new FormData(form);
@@ -199,19 +200,36 @@ async function getJson(url, options) {
   const response = await fetch(url, options);
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error ?? `Request failed with ${response.status}`);
+    throw new Error(
+      data.failure?.error ??
+        data.error ??
+        data.message ??
+        `Request failed with ${response.status}`
+    );
   }
   return data;
 }
 
+function populateAuthorityFields(authority) {
+  if (!authority) return;
+  operatorAuthority.textContent = authority;
+  document.querySelector('.action-card[data-action="mint"] input[name="recipient"]').value ||= authority;
+  document.querySelector('.action-card[data-action="burn"] input[name="holder"]').value ||= authority;
+  document.querySelector('.action-card[data-action="blacklist-add"] input[name="address"]').value ||= authority;
+  document.querySelector('.action-card[data-action="seize"] input[name="from"]').value ||= authority;
+}
+
 async function refreshServicesHealth() {
-  const services = [
-    document.querySelector("#mintBurnUrl").value.replace(/\/$/, ""),
-    document.querySelector("#complianceUrl").value.replace(/\/$/, ""),
-    document.querySelector("#indexerUrl").value.replace(/\/$/, ""),
-  ];
+  const mintBurnBase = document.querySelector("#mintBurnUrl").value.replace(/\/$/, "");
+  const complianceBase = document.querySelector("#complianceUrl").value.replace(/\/$/, "");
+  const indexerBase = document.querySelector("#indexerUrl").value.replace(/\/$/, "");
   try {
-    await Promise.all(services.map((base) => getJson(`${base}/health`)));
+    const [mintBurnHealth] = await Promise.all([
+      getJson(`${mintBurnBase}/health`),
+      getJson(`${complianceBase}/health`),
+      getJson(`${indexerBase}/health`),
+    ]);
+    populateAuthorityFields(mintBurnHealth.authority);
     servicesState.textContent = "All service endpoints reachable";
     servicesState.classList.add("status-pill-live");
   } catch (error) {

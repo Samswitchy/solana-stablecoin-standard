@@ -19,6 +19,7 @@ async function health() {
     service: SERVICE,
     rpcUrl: runtime.rpcUrl,
     statePath: runtime.statePath,
+    authority: runtime.authorityPubkey,
     requests: ledger.requests.read().length,
     failures: ledger.failures.read().length,
   };
